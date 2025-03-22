@@ -24,16 +24,6 @@ void CheckArguments (int argc, char ** argv)
         printf("Error: incorrect number of arguments (must be 2).");
         exit(1);
     }
-    int events = atoi(argv[1]); //Converting the number from string to integrer
-    //For error managing we will check the number is positive
-
-    if (events <= 0)  // Ensure it's a positive number
-    {
-        printf("Error: The number of events must be a positive integer.\n");
-        exit(1);
-    }
-
-    EventNumbers = events;
 }
 
 //----------------------------------------------------------RobotPackages -> Sorted list
