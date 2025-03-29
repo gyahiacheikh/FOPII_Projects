@@ -24,6 +24,12 @@ void CheckArguments (int argc, char ** argv)
         printf("Error: incorrect number of arguments (must be 2).");
         exit(1);
     }
+	int events=atoi(argv[1]);
+	if (events<=0){
+		printf("Error: number of events must be positive.");
+		exit(1);
+	}
+	EventNumbers=events;
 }
 
 //----------------------------------------------------------RobotPackages -> Sorted list
@@ -171,28 +177,42 @@ void SimulationLoop(int EventNumbers)
 	
 	for (int i=0; i<EventNumbers; i++)    
 	{
-		// generate event type
+		enum EventType event=GenerateEventType(); // generate event type
+		printf("Event %d: Type %d\n", i+1, event);
 		// depending on the generated event type:
-		// event type 0: 
-			// generate RobotPackage 
-			// Simulate managing RobotPackages (sorting)
-		// event type 1:
-			// generate Package
-			// Simulate classifying Packages (putting to a corresponding stack)
-		// event type 2:
-			// generate shopping
-			// Simulate go for shopping 
-		// UpdateShopping
+		switch (event)
+		{
+			case 0:{ // event type 0: 
+				struct RobotPackage *rp=GenerateRobotPackage(); // generate RobotPackage 
+				SimulateManagingRobotPackages(rp); // Simulate managing RobotPackages (sorting) 
+				break;
+			}
+			case 1:{// event type 1:
+				struct Package *p=GeneratePackage();// generate Package
+				SimulateClassifyPackage(p);// Simulate classifying Packages (putting to a corresponding stack)
+				break;
+			}
+			case 2: { // event type 2:
+				struct Shopping *s=GenerateShopping();// generate shopping
+				SimulateGoForShopping(s); // Simulate go for shopping 
+				break;
+			}
+		}
+		UpdateShoppingQueue();// UpdateShopping
 	}
-	// CLEANING THE SIMULATION
+	// CLEANING THE SIMULATION (to free all the memory at the end)
+	RemoveAllRobotPackages();
+	CleanPackageStacks();
+	CleanShoppingQueue();
 }
-int EventNumbers;
+
 
 int main (int argc, char ** argv)
 {
 	
 	printf ("Starting... \n");
 	CheckArguments(argc, argv);
+	
 	
 	// initialize EventNumbers 
 
