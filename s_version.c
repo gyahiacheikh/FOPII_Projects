@@ -197,7 +197,17 @@ void SimulateClassifyPackage(struct Package * Package)
 // function to clean all stacks before the end of the program
 void CleanPackageStacks()
 {
-
+	for (int i = 0; i < 3; i++) {  // Iterate over all three stacks
+        free(stacks[i]); // Free the allocated memory for each stack
+        stacks[i] = NULL; // Set pointer to NULL to prevent dangling pointer issues
+        top[i] = -1; // Reset the stack top index
+    }
+    
+    free(stacks); // Free the array of stack pointers
+    stacks = NULL;
+    
+    free(top); // Free the array holding top indices
+    top = NULL;
 }
 
 //----------------------------------------------------------Shopping -> Queue
