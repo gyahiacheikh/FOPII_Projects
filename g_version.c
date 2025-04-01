@@ -296,7 +296,7 @@ int Dequeue ()
         queueLast = NULL;
     }
 
-    //printf("Robot ID=%d is now shopping, buying %d items.\n", temp->robot_id, shoppingTime);
+    //FUNCIONA printf("Robot ID=%d is now shopping, buying %d items.\n", temp->robot_id, shoppingTime);
     free(temp); // Free the memory allocated for the removed robot
 
     return shoppingTime; // Return the shopping time to simulate time passing
