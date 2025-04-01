@@ -12,8 +12,8 @@ Simulator - main program
 
 #include "project1.h" // header with all data structures
 
-int booksRemoved = 0;
-int platesRemoved = 0;
+int packages1Removed = 0;
+int packages2Removed = 0;
 int robotsRemoved = 0;
 
 //----------------------------------------------------------General
@@ -110,8 +110,8 @@ void SimulateManagingRobotPackages(struct RobotPackage * RobotPackage)
     RobotPackage->next = current->next;
     current->next = RobotPackage;
 
-    printf("Inserted RobotPackage: %s, %s, %d\n", 
-        RobotPackage->supplier, RobotPackage->id, RobotPackage->year);
+    //printf("Inserted RobotPackage: %s, %s, %d\n", 
+        //RobotPackage->supplier, RobotPackage->id, RobotPackage->year);
 }
 
 // function to remove all the RobotPackages from the list at the end of the program
@@ -181,9 +181,9 @@ void PrintPackages()
 // function to remove all packages from a given stack when its MAX_CAPACITY is reached
 void RemoveStack(int stackIndex, struct Package **stacks, int *top) {
 	if (stackIndex == 0) { // Books are in stack 0
-        booksRemoved += (top[stackIndex] + 1);
+        packages1Removed += (top[stackIndex] + 1);
     } else if (stackIndex == 1) { // Plates are in stack 1
-        platesRemoved += (top[stackIndex] + 1);
+        packages2Removed += (top[stackIndex] + 1);
     } else if (stackIndex == 2) { // Robots are in stack 2
 		robotsRemoved += (top[stackIndex] + 1);
 	}
@@ -238,11 +238,11 @@ struct Shopping * GenerateShopping()
 void PrintShopping()
 {
 	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
-    printf("Removing books...\n");
-    printf("%d books have been removed.\n", booksRemoved);
+    printf("R Removing packages...\n");
+    printf("%d packages have been removed.\n", packages1Removed);
 
-    printf("Cleaning all stacks of plates...\n");
-    printf("%d plates have been removed.\n", platesRemoved);
+    printf("Cleaning all stacks of packages...\n");
+    printf("%d packages have been removed.\n", packages2Removed);
 
     printf("Cleaning shopping queue...\n");
     printf("%d robots have been removed.\n", robotsRemoved);
@@ -402,7 +402,7 @@ void SimulationLoop(int EventNumbers)
 		// UpdateShopping
 		UpdateShoppingQueue();
 	}
-
+    PrintPackages();
     PrintRobotPackages(robotPackageList); 
 	
 	// CLEANING THE SIMULATION
