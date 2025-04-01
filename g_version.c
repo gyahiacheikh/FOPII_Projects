@@ -234,9 +234,9 @@ struct Shopping * GenerateShopping()
 }
 
 // function to print a list of robots in a shopping queue
-void PrintShopping() //HACER YOOO
+void PrintShopping() 
 {
-	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
+	printf("\nSTATISTICS WHEN CLEANING THE SIMULATION:\n");
     printf("Removing packages...\n");
     printf("%d packages have been removed.\n", packages1Removed);
 
@@ -245,6 +245,18 @@ void PrintShopping() //HACER YOOO
 
     printf("Cleaning shopping queue...\n");
     printf("%d robots have been removed.\n", robotsRemoved);
+
+	//Printing all the robotd in the queue
+	struct Shopping* current=queueFirst;
+	if (current == NULL){
+		printf("No robots remain in the shopping queue.\n");
+	} else {
+		printf("Robors remaining in the shopping queue:\n");
+		while (current != NULL) {
+			printf("Robot ID: %d, Items to buy: %d\n", current->robot_id, current->numberThingsToBuy);
+			current=current->next;
+		}
+	}
 }
 
 // function to add a robot to a shopping queue
@@ -347,14 +359,10 @@ void CleanShoppingQueue()
     struct Shopping *nextRobot;
 
     if (current==NULL){
-        printf("No robots remain in the shopping queue to clean.");
         return;
     }
-
-    printf("Cleaning shopping queue. Robots remaining: \n");
     // Iterate through the queue and free each robot
     while (current != NULL) {
-        printf("Robot ID: %d, Items to buy: %d\n", current);
         nextRobot = current->next;  // Store the next robot before freeing the current one
         free(current);              // Free the current robot
         current = nextRobot;        // Move to the next robot
@@ -363,8 +371,6 @@ void CleanShoppingQueue()
     // After freeing all robots, reset the queue pointers to NULL
     queueFirst = NULL;
     queueLast = NULL;
-
-    //printf("The shopping queue has been cleaned and all robots have been freed.\n");
 }
 
 //----------------------------------------------------------main
@@ -372,51 +378,38 @@ void CleanShoppingQueue()
 // It generates and consumes events.
 void SimulationLoop(int EventNumbers)
 {
-	srand(time(NULL)); // to ensure randomization with each run
-	int eventType;
+    srand(time(NULL)); // to ensure randomization with each run
+    int eventType;
     int stackIndex;
-	InitStacks();
-	
-	for (int i=0; i<EventNumbers; i++){
-		// generate event type
-		eventType = GenerateEventType();
-		
-		// depending on the generated event type:
-		// Event type 0: 
-		if (eventType == 0) {
-			// generate RobotPackage 
-			struct RobotPackage* newPackage = GenerateRobotPackage();
-			// Simulate managing RobotPackages (sorting)
-			SimulateManagingRobotPackages(newPackage);
-		}
-
-		// event type 1: 
-		else if (eventType == 1) {
-			//generate Package
-			struct Package* newPackage = GeneratePackage();
-			// Simulate classifying Packages (pputting to a corresponding stack)
-			SimulateClassifyPackage(newPackage);
-		}
-
-		// event type 2:
-		else if (eventType == 2) {
-			// generate shopping
-			struct Shopping* newShopping = GenerateShopping();
-			// Simulate go for shopping
-			SimulateGoForShopping(newShopping);
-		}
-		
-		// UpdateShopping
-		UpdateShoppingQueue();
-	}
+    InitStacks();
+    
+    for (int i = 0; i < EventNumbers; i++) {
+        // generate event type
+        eventType = GenerateEventType();
+        
+        // depending on the generated event type:
+        if (eventType == 0) {
+            struct RobotPackage* newPackage = GenerateRobotPackage();
+            SimulateManagingRobotPackages(newPackage);
+        } else if (eventType == 1) {
+            struct Package* newPackage = GeneratePackage();
+            SimulateClassifyPackage(newPackage);
+        } else if (eventType == 2) {
+            struct Shopping* newShopping = GenerateShopping();
+            SimulateGoForShopping(newShopping);
+        }
+        
+        UpdateShoppingQueue();
+    }
     
     PrintRobotPackages(robotPackageList); 
     PrintPackages();
-	
-	// CLEANING THE SIMULATION
-	RemoveAllRobotPackages();
-	CleanPackageStacks();
-	CleanShoppingQueue();
+    
+    // CLEANING THE SIMULATION
+    RemoveAllRobotPackages();
+    CleanPackageStacks();
+    PrintShopping();         // Print robots in the queue
+    CleanShoppingQueue();    // Clean the queue without printing
 }
 		
 
@@ -428,6 +421,5 @@ int main (int argc, char ** argv)
 	CheckArguments(argc, argv);
     int EventNumbers = atoi(argv[1]);
 	SimulationLoop(EventNumbers);
-	PrintShopping();
 	return 0;
 }
