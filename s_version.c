@@ -229,44 +229,126 @@ void PrintShopping()
 {
 	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
     printf("Removing books...\n");
-    printf("%d books has been removed.\n", booksRemoved);
+    printf("%d books have been removed.\n", booksRemoved);
 
     printf("Cleaning all stacks of plates...\n");
-    printf("%d plates has been removed.\n", platesRemoved);
+    printf("%d plates have been removed.\n", platesRemoved);
 
     printf("Cleaning shopping queue...\n");
-    printf("%d robots has been removed.\n", robotsRemoved);
+    printf("%d robots have been removed.\n", robotsRemoved);
 }
 
 // function to add a robot to a shopping queue
 void AddToQueue(struct Shopping * shopping)
 {
+	shopping->next = NULL; // Ensure the new robot does not point to anything
 
+    if (queueFirst == NULL) { 
+        // If the queue is empty, set the new robot as both first and last
+        queueFirst = shopping;
+        queueLast = shopping;
+    } else { 
+        // Otherwise, add to the end of the queue
+        queueLast->next = shopping;
+        queueLast = shopping;
+    }
+
+    //printf("Robot ID=%d added to the shopping queue with %d items to buy.\n", shopping->robot_id, shopping->numberThingsToBuy);
 }
 
 // function to remove a robot from the queue and serve it
 // it may return the number of things to buy to simulate the time
 int Dequeue ()
 {
+	if (queueFirst == NULL) {
+        printf("No robots in the queue.\n");
+        return 0; // No robot to serve
+    }
 
+    struct Shopping* temp = queueFirst; // Store the first robot
+    int shoppingTime = temp->numberThingsToBuy; // Number of items to buy (simulation time)
+
+    queueFirst = queueFirst->next; // Move queueFirst to the next robot
+
+    if (queueFirst == NULL) { 
+        // If the queue becomes empty, reset queueLast as well
+        queueLast = NULL;
+    }
+
+    //printf("Robot ID=%d is now shopping, buying %d items.\n", temp->robot_id, shoppingTime);
+    free(temp); // Free the memory allocated for the removed robot
+
+    return shoppingTime; // Return the shopping time to simulate time passing
 }
 
 // function to simulate the time the robot is in the queue
-void UpdateShoppingQueue (/*...*/)
+void UpdateShoppingQueue ()
 {
+	// If the queue is not empty
+    if (queueFirst != NULL) {
+        // Process the first robot in the queue
+        struct Shopping *current = queueFirst;
+        
+        // If the robot's shopping is not complete, simulate time by buying 1 item per event
+        while (current != NULL) {
+            if (current->numberThingsToBuy > 0) {
+                // Decrease the number of things the robot needs to buy (simulate 1 event)
+                current->numberThingsToBuy--;
+                
+                //printf("Robot ID=%d is shopping, %d items left.\n", current->robot_id, current->numberThingsToBuy);
+            }
 
+            // If the robot has finished shopping, dequeue it from the queue
+            if (current->numberThingsToBuy == 0) {
+                // Robot finished shopping, remove it from the queue
+                Dequeue();
+                break; // Move to the next robot (if there are any left)
+            }
+            
+            // Move to the next robot in the queue if the current one is still shopping
+            current = current->next;
+        }
+    }
 }
 
 // function to simulate a robot going for shopping - add to the queue
 void SimulateGoForShopping(struct Shopping * shopping)
 {
+	// Check if the queue is empty
+    if (queueFirst == NULL) {
+        // If the queue is empty, both the first and last pointers point to the new robot
+        queueFirst = shopping;
+        queueLast = shopping;
+    } else {
+        // If the queue is not empty, add the new robot at the end of the queue
+        queueLast->next = shopping;
+        queueLast = shopping;  // Update the queueLast pointer to the new robot
+    }
 
+    // Make sure the new robot's next pointer is NULL as it's the last in the queue
+    shopping->next = NULL;
+
+    //printf("Robot ID=%d with %d items to buy has joined the shopping queue.\n", shopping->robot_id, shopping->numberThingsToBuy);
 }
 
 // function to clean shopping queue before the end of the program
 void CleanShoppingQueue()
 {
+	struct Shopping *current = queueFirst;
+    struct Shopping *nextRobot;
 
+    // Iterate through the queue and free each robot
+    while (current != NULL) {
+        nextRobot = current->next;  // Store the next robot before freeing the current one
+        free(current);              // Free the current robot
+        current = nextRobot;        // Move to the next robot
+    }
+
+    // After freeing all robots, reset the queue pointers to NULL
+    queueFirst = NULL;
+    queueLast = NULL;
+
+    //printf("The shopping queue has been cleaned and all robots have been freed.\n");
 }
 
 //----------------------------------------------------------main
