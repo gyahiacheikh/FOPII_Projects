@@ -45,6 +45,9 @@ struct RobotPackage
 enum PackageType { small=0, medium=1, large=2 };
 enum Colors { white=0, green=1, yellow=2, beige=3 };
 
+// Array of color names corresponding to the Colors enum
+const char* colorNames[] = {"white", "green", "yellow", "beige"};
+
 // There are 3 different stacks, each one for each type of Package
 // Here we create a static array to have 3 pointers to a top element of each stack
 struct Package * Top_ofPackageStacks[NUMBER_OF_STACK];

@@ -167,14 +167,14 @@ void InitStacks()
 }
 
 // function to print all stacks with all Packages
-void PrintPackages(){
-	for (int i = 0; i < 3; i++) {
-		printf("Stack %d:\n", i);
-		for (int j = 0; j <= top[i]; j++) {
-            printf("Package Type: %d, Color: %d\n", stacks[i][j].type, stacks[i][j].color);
-		}
-		printf("\n");
-	}
+void PrintPackages() {
+    for (int i = 0; i < 3; i++) {
+        printf("Stack %d:\n", i);
+        for (int j = 0; j <= top[i]; j++) {
+            printf("Package Type: %d, Color: %s\n", stacks[i][j].type, colorNames[stacks[i][j].color]);
+        }
+        printf("\n");
+    }
 }
 
 // function to remove all packages from a given stack when its MAX_CAPACITY is reached
