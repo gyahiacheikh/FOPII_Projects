@@ -167,12 +167,11 @@ void InitStacks()
 }
 
 // function to print all stacks with all Packages
-void PrintPackages()
-{
+void PrintPackages(){
 	for (int i = 0; i < 3; i++) {
 		printf("Stack %d:\n", i);
 		for (int j = 0; j <= top[i]; j++) {
-			printf("Package Type: %d, Color: %d\n", stacks[i][j].type, stacks[i][j].color);
+            printf("Package Type: %d, Color: %d\n", stacks[i][j].type, stacks[i][j].color);
 		}
 		printf("\n");
 	}
@@ -368,6 +367,7 @@ void SimulationLoop(int EventNumbers)
 {
 	srand(time(NULL)); // to ensure randomization with each run
 	int eventType;
+    int stackIndex;
 	InitStacks();
 	
 	for (int i=0; i<EventNumbers; i++){
@@ -402,8 +402,9 @@ void SimulationLoop(int EventNumbers)
 		// UpdateShopping
 		UpdateShoppingQueue();
 	}
-    PrintPackages();
+    
     PrintRobotPackages(robotPackageList); 
+    PrintPackages();
 	
 	// CLEANING THE SIMULATION
 	RemoveAllRobotPackages();
@@ -414,6 +415,8 @@ void SimulationLoop(int EventNumbers)
 
 int main (int argc, char ** argv)
 {
+    enum PackageType;
+    enum Colors;
 	printf ("Starting... \n");
 	CheckArguments(argc, argv);
     int EventNumbers = atoi(argv[1]);
