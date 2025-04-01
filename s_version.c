@@ -30,7 +30,7 @@ void CheckArguments (int argc, char ** argv)
 		exit(1);
     }
 
-	int EventNumbers = atoi(argv[1]); // Convert the argument to an integer
+	int EventNumbers = atoi(argv[1]); // This is the numebr of events passed. Convert the argument to an integer
     if (EventNumbers <= 0) {
         printf("The number of events must be a positive integer.\n");
         exit(1); 
@@ -45,7 +45,9 @@ struct RobotPackage * GenerateRobotPackage()
 	struct RobotPackage * RobotPackage=malloc(sizeof(struct RobotPackage));
 	int RobotPackageNum=rand()%8;
 	// initialize the RobotPackage's fields
+    // from the project.h header; predefined suppliers of RobotPackages: there are 8 RobotPackages
 	strcpy (RobotPackage->supplier, suppliers[RobotPackageNum]);
+    // from the project.h header; predefined ids of RobotPackages; there are 8 RobotPackages
 	strcpy (RobotPackage->id, ids[RobotPackageNum]);
 	int year=rand()%40+1980;
 	RobotPackage->year=year;
@@ -86,6 +88,11 @@ struct RobotPackage* SearchRobotPackage(struct RobotPackage* head, char* supplie
 // function to simulate an insertion of RobotPackages in a ordered way (sorted by supplier)
 void SimulateManagingRobotPackages(struct RobotPackage * RobotPackage)
 {
+    if (RobotPackage == NULL) {
+        printf("Error: Attempted to insert NULL RobotPackage!\n");
+        return;
+    }
+
 	if (robotPackageList == NULL || strcmp(RobotPackage->supplier, robotPackageList->supplier) < 0) {
         // Insert at the beginning
         RobotPackage->next = robotPackageList;
@@ -102,6 +109,9 @@ void SimulateManagingRobotPackages(struct RobotPackage * RobotPackage)
     // Insert the package in the correct position
     RobotPackage->next = current->next;
     current->next = RobotPackage;
+
+    printf("Inserted RobotPackage: %s, %s, %d\n", 
+        RobotPackage->supplier, RobotPackage->id, RobotPackage->year);
 }
 
 // function to remove all the RobotPackages from the list at the end of the program
@@ -392,6 +402,8 @@ void SimulationLoop(int EventNumbers)
 		// UpdateShopping
 		UpdateShoppingQueue();
 	}
+
+    PrintRobotPackages(robotPackageList); 
 	
 	// CLEANING THE SIMULATION
 	RemoveAllRobotPackages();
@@ -402,10 +414,9 @@ void SimulationLoop(int EventNumbers)
 
 int main (int argc, char ** argv)
 {
-	int EventNumbers = atoi(argv[1]);
 	printf ("Starting... \n");
 	CheckArguments(argc, argv);
-
+    int EventNumbers = atoi(argv[1]);
 	SimulationLoop(EventNumbers);
 	PrintShopping();
 	return 0;
