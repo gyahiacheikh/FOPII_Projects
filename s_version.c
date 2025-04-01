@@ -238,7 +238,7 @@ struct Shopping * GenerateShopping()
 void PrintShopping()
 {
 	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
-    printf("R Removing packages...\n");
+    printf("Removing packages...\n");
     printf("%d packages have been removed.\n", packages1Removed);
 
     printf("Cleaning all stacks of packages...\n");
