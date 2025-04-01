@@ -30,6 +30,7 @@ Then we attacked the `void SimulationLoop(int EventNumbers)`, the structure we f
 4. And finally simulating the time passing after each event (`UpdateShoppingQueue()`)
 
 ##### **Book sorting**
+Now let's attack the book sorting section, 
 ##### **Plate management (Stacks)**
 ##### **Robot Shopping (Queue and Time)**
 ##### **Fine Tuning (Cleanup and Testing)**
