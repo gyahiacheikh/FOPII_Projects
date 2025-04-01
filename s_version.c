@@ -234,7 +234,7 @@ struct Shopping * GenerateShopping()
 }
 
 // function to print a list of robots in a shopping queue
-void PrintShopping()
+void PrintShopping() //HACER YOOO
 {
 	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
     printf("Removing packages...\n");
@@ -346,8 +346,15 @@ void CleanShoppingQueue()
 	struct Shopping *current = queueFirst;
     struct Shopping *nextRobot;
 
+    if (current==NULL){
+        printf("No robots remain in the shopping queue to clean.");
+        return;
+    }
+
+    printf("Cleaning shopping queue. Robots remaining: \n");
     // Iterate through the queue and free each robot
     while (current != NULL) {
+        printf("Robot ID: %d, Items to buy: %d\n", current);
         nextRobot = current->next;  // Store the next robot before freeing the current one
         free(current);              // Free the current robot
         current = nextRobot;        // Move to the next robot
