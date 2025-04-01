@@ -8,7 +8,7 @@ Simulator - main program
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <time.h> // to use srand(time(NULL)); to ensure randomization with each run
 
 #include "project1.h" // header with all data structures
 
@@ -89,7 +89,7 @@ struct RobotPackage* SearchRobotPackage(struct RobotPackage* head, char* supplie
 void SimulateManagingRobotPackages(struct RobotPackage * RobotPackage)
 {
     if (RobotPackage == NULL) {
-        printf("Error: Attempted to insert NULL RobotPackage!\n");
+        printf("Error: Attempted to insert NULL RobotPackage\n");
         return;
     }
 
@@ -133,7 +133,7 @@ void RemoveAllRobotPackages()
 struct Package * GeneratePackage()
 {
 	// reserve memory for a Package
-	struct Package * Package=malloc(sizeof(struct Package));
+	struct Package * Package = malloc(sizeof(struct Package));
 	// initialize the Package's fields
 	enum PackageType type=rand()%3;
 	enum Colors color=rand()%4;
@@ -162,19 +162,38 @@ void InitStacks()
 			printf("Memory allocation failed for stack %d.\n", i);
 			exit(1);
 		}
-		top[i] = -1; // Initialize as empty
+		top[i] = -1; // USE FROM HEADER
 	}
 }
 
+const char* PackageTypeToString(enum PackageType type) {
+    switch (type) {
+        case 0: return "small";
+        case 1: return "medium";
+        case 2: return "large";
+        default: return "UNKNOWN";
+    }
+}
+
+const char* ColorToString(enum Colors color) {
+    switch (color) {
+        case 0: return "white";
+        case 1: return "green";
+        case 2: return "yellow";
+        case 3: return "beige";
+        default: return "UNKNOWN";
+    }
+}
+
 // function to print all stacks with all Packages
-void PrintPackages(){
-	for (int i = 0; i < 3; i++) {
-		printf("Stack %d:\n", i);
-		for (int j = 0; j <= top[i]; j++) {
-            printf("Package Type: %d, Color: %d\n", stacks[i][j].type, stacks[i][j].color);
-		}
-		printf("\n");
-	}
+void PrintPackages() {
+    for (int i = 0; i < 3; i++) {
+        printf("Stack %d:\n", i);
+        for (int j = 0; j <= top[i]; j++) {
+            printf("Package Type: %s, Color: %s\n", PackageTypeToString(stacks[i][j].type), ColorToString(stacks[i][j].color));
+        }
+        printf("\n");
+    }
 }
 
 // function to remove all packages from a given stack when its MAX_CAPACITY is reached
@@ -233,19 +252,18 @@ struct Shopping * GenerateShopping()
 	return shopping;
 }
 
-// function to print a list of robots in a shopping queue
-void PrintShopping()
-{
-	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
-    printf("Removing packages...\n");
-    printf("%d packages have been removed.\n", packages1Removed);
+struct Shopping* robotQueueList = NULL;
+void PrintShopping(struct Shopping* head) {
+    struct Shopping* temp = head;
 
-    printf("Cleaning all stacks of packages...\n");
-    printf("%d packages have been removed.\n", packages2Removed);
-
-    printf("Cleaning shopping queue...\n");
-    printf("%d robots have been removed.\n", robotsRemoved);
+    //printf("Robots entering the queue:\n");
+    while (temp != NULL) {
+        printf("Robot with ID: %d entered the queue with %d items to buy\n", temp->numberThingsToBuy, temp->robot_id);
+        temp = temp->next;
+    }
+    printf("\n");
 }
+
 
 // function to add a robot to a shopping queue
 void AddToQueue(struct Shopping * shopping)
@@ -261,8 +279,6 @@ void AddToQueue(struct Shopping * shopping)
         queueLast->next = shopping;
         queueLast = shopping;
     }
-
-    //printf("Robot ID=%d added to the shopping queue with %d items to buy.\n", shopping->robot_id, shopping->numberThingsToBuy);
 }
 
 // function to remove a robot from the queue and serve it
@@ -284,7 +300,7 @@ int Dequeue ()
         queueLast = NULL;
     }
 
-    //printf("Robot ID=%d is now shopping, buying %d items.\n", temp->robot_id, shoppingTime);
+    // FUNCIONA printf("Robot ID=%d is now shopping, buying %d items.\n", temp->robot_id, shoppingTime);
     free(temp); // Free the memory allocated for the removed robot
 
     return shoppingTime; // Return the shopping time to simulate time passing
@@ -302,7 +318,7 @@ void UpdateShoppingQueue ()
         while (current != NULL) {
             if (current->numberThingsToBuy > 0) {
                 // Decrease the number of things the robot needs to buy (simulate 1 event)
-                current->numberThingsToBuy--;
+                current->numberThingsToBuy--; //ESTO MAL
                 
                 //printf("Robot ID=%d is shopping, %d items left.\n", current->robot_id, current->numberThingsToBuy);
             }
@@ -334,10 +350,9 @@ void SimulateGoForShopping(struct Shopping * shopping)
         queueLast = shopping;  // Update the queueLast pointer to the new robot
     }
 
+    printf("Robot ID=%d with %d items to buy has joined the shopping queue.\n", shopping->robot_id, shopping->numberThingsToBuy); //FUNCIONA
     // Make sure the new robot's next pointer is NULL as it's the last in the queue
     shopping->next = NULL;
-
-    //printf("Robot ID=%d with %d items to buy has joined the shopping queue.\n", shopping->robot_id, shopping->numberThingsToBuy);
 }
 
 // function to clean shopping queue before the end of the program
@@ -345,7 +360,9 @@ void CleanShoppingQueue()
 {
 	struct Shopping *current = queueFirst;
     struct Shopping *nextRobot;
-
+    if (current == NULL){
+        printf("There are no robots in the queue.\n");
+    }
     // Iterate through the queue and free each robot
     while (current != NULL) {
         nextRobot = current->next;  // Store the next robot before freeing the current one
@@ -357,7 +374,7 @@ void CleanShoppingQueue()
     queueFirst = NULL;
     queueLast = NULL;
 
-    //printf("The shopping queue has been cleaned and all robots have been freed.\n");
+    printf("The shopping queue has been cleaned and all robots have been freed.\n\n");
 }
 
 //----------------------------------------------------------main
@@ -405,22 +422,34 @@ void SimulationLoop(int EventNumbers)
     
     PrintRobotPackages(robotPackageList); 
     PrintPackages();
+    PrintShopping(robotQueueList);
 	
 	// CLEANING THE SIMULATION
 	RemoveAllRobotPackages();
 	CleanPackageStacks();
 	CleanShoppingQueue();
 }
+
+void PrintStatistics()
+{
+	printf("STATISTICS WHEN CLEANING THE SIMULATION:\n");
+    printf("Removing packages...\n");
+    printf("%d packages have been removed.\n", packages1Removed);
+
+    printf("Cleaning all stacks of packages...\n");
+    printf("%d packages have been removed.\n", packages2Removed);
+
+    printf("Cleaning shopping queue...\n");
+    printf("%d robots have been removed.\n", robotsRemoved);
+}
 		
 
 int main (int argc, char ** argv)
 {
-    enum PackageType;
-    enum Colors;
-	printf ("Starting... \n");
 	CheckArguments(argc, argv);
+    printf ("Starting... \n");
     int EventNumbers = atoi(argv[1]);
 	SimulationLoop(EventNumbers);
-	PrintShopping();
+	PrintStatistics();
 	return 0;
 }
