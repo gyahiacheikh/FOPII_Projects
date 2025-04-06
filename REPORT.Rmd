@@ -1,0 +1,29 @@
+---
+title: "Project 1"
+subtitle: "Fundamentals of programming II"
+date: "April 2025"
+author: "Gússem Yahia-Cheikh and Sara Díez"
+output: pdf_document
+---
+
+# Introduction and Strategy
+
+# Implementation
+
+## 1. Argument management
+
+## 2. Generation of events
+
+## 3. Consuming events
+
+# System Tasks
+
+## Task 1: Sorting packages
+
+## Task 2: Package classification
+
+## Task 3: Shopping queue
+
+# Problems and criticism
+
+# Execution output
