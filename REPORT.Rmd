@@ -12,6 +12,8 @@ output: pdf_document
 
 ## 1. Argument management
 
+The program starts by validating its command-line arguments. The number of expected events must be passed when executing the program. If the input is missing or invalid (not a positive number), the program prints an error message and exits. This ensures proper usage from the user side.
+
 ## 2. Generation of events
 
 ## 3. Consuming events
