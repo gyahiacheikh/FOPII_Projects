@@ -10,7 +10,6 @@ output: pdf_document
 
 First of all, before starting programming directly, we wanted to adress the whole problem and see what were the structure of creation to archive the desired result. So we started by making an schema/flowchart of the whole program and the steps we wanted to follow.
 
-
 ### Strategy and Steps
 
 We decide to divide the work by functionality provided each 'exercice' in the pdf, so the three main areas to work on are:
