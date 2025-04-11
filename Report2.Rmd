@@ -6,35 +6,33 @@ author: "Gússem Yahia-Cheikh and Sara Díez"
 output: pdf_document
 ---
 
-### First steps
-
-First of all, before starting programming directly, we wanted to adress the whole problem and see what were the structure of creation to archive the desired result. So we started by making an schema/flowchart of the whole program and the steps we wanted to follow.
-
 ### Strategy and Steps
 
-We decide to divide the work by functionality provided each 'exercice' in the pdf, so the three main areas to work on are:
+We decided to divide the work by the three core functionalities provided in the project description:
 
--   Books
+-   **Task 1: Package Management**
 
--   Plates
+-   **Task 2: Package Classification**
 
--   Shopping
+-   **Task 3: Shopping simulation**
+
+This divsion helped us to work modularly and focus on each part before combining them toghether.
 
 ### **Argument Management**
 
-So from there we started by the initial phase of the program, the input and the managment of it. The function `void CheckArguments (int argc, char *argv)` checks the number of arguments is correct and that the second argument $\in \mathbb{R}$. If the conditions are satisfied we stored the value in `EventNumbers`.
+We started with the agrument validation. The function `void CheckArguments (int argc, char *argv)` ensures that the correct number of arguments is passed and that the second argument is a positive integrer. If valid, it's stored in `EventNumbers` , which controls the number of simulated events.
 
 ### **Event Loop Setup**
 
-Then we attacked the `void SimulationLoop(int EventNumbers)`, the structure we followed to code the function was:
+We then implemented the `SimulationLoop(int EventNumbers)` function, which works as the heart of the simulator:
 
-1.  Loop over the number of events
+1.  Loops over the number of events
 
-2.  Generate a random event type (0,1 or 2)
+2.  Generates a random event type (0,1 or 2)
 
 3.  On each iteration we delegate it corresponding type:
 
-    1.  Type 0: Package sortment
+    1.  Type 0: Package sorting
 
     2.  Type 1: Package classification
 
@@ -42,17 +40,19 @@ Then we attacked the `void SimulationLoop(int EventNumbers)`, the structure we f
 
 4.  And finally simulating the time passing after each event ( `UpdateShoppingQueue()` )
 
-### **Task 1: Package managment**
+This ensures that exactly one time unit passes per event.
 
-Now let's address the package managment block, here we will work with sorted linked lists ordered by `suppliers` (taking in count that the `RobotPackage` contains a `supplier`, `id` and `year`). We have three functions working in this block: `PrintRobotPackages()`, `SearchRobotPackage()` and `SimulateManagingRobotPackages()`.
+### **Task 1: Package management**
+
+Now let's address the package management block, here worked with sorted linked lists ordered by `suppliers` (taking in count that the `RobotPackage` contains a `supplier`, `id` and `year`). We have three functions working in this block: `PrintRobotPackages()`, `SearchRobotPackage()` POSAR ALGO MAS
 
 ### **Task 2: Package Classification (Stacks)**
 
-For this task, we implemented three stacks representing small, medium, and large packages. Each package has a randomly assigned type and color. When a package arrives, the system decides which stack it belongs to and pushes it there.
+For this task, we implemented three stacks representing small, medium, and large packages.
 
-We defined a `Stack` structure using a singly linked list. Each time a package is classified, we check whether the stack has reached its `MAX_CAPACITY`. If it has, the robot simulates transporting all packages by removing (freeing) all nodes in the stack.
+Each `Package` has a randomly assigned type and color. When a package arrives, the system decides which stack it belongs to and pushes it there.
 
-This allows us to manage space dynamically and simulate real-world capacity constraints.
+Each time a package is classified, we check whether the stack has reached its `MAX_CAPACITY`. If it has, the robot simulates transporting all packages by removing (freeing) all nodes in the stack.
 
 ### **Task 3: Shopping (Queue and Time)**
 
@@ -60,9 +60,9 @@ This system manages a shopping queue. Each robot is created with a shopping list
 
 Time is simulated through the event loop: one unit of time passes for each event (sorting, classification, or shopping). We track how many items each robot still has to buy. When a robot’s count reaches zero, it is removed from the queue (and memory is freed).
 
-This approach mimics how robots would queue up and shop asynchronously, with their progress depending on the total activity in the system.
+### Simulation Design
 
-### **Fine Tuning (Cleanup and Testing)**
+The simulation is a key piece in this project. Each iteration of the event loop represents one time unit, this is enforced consistently calling `UpdateShoppingQueue()` after handling each event. As a result, robots shop one item per event until their list is complete.
 
 ## Problems and criticisms
 
@@ -73,3 +73,69 @@ Another difficulty was simulating the shopping time using event counts. We had t
 Finally, handling the string operations and ordering in the package management system required careful use of `strcmp()` and array boundaries.
 
 ## Output Sampling
+
+Terminal copy-paste:
+
+```{C}
+gussemyahia-cheikh@Gussems-MacBook-Pro FP2LAB1 % ./file.exe 100             
+Starting... 
+Robot Packages (Sorted List):
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 2004
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 1986
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 1998
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 2012
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 2012
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 1986
+Supplier: CISCO, ID: CIS-X1-GRE-ME, Year: 2002
+Supplier: DELL, ID: DEL-DX-PLA-LAR, Year: 2015
+Supplier: DELL, ID: DEL-DX-PLA-LAR, Year: 1983
+Supplier: DELL, ID: DEL-DX-PLA-LAR, Year: 1995
+Supplier: DELL, ID: DEL-DX-PLA-LAR, Year: 2018
+Supplier: IBM, ID: IBM-OX-PLA-LA, Year: 2007
+Supplier: IBM, ID: IBM-OX-PLA-LA, Year: 1992
+Supplier: IBM, ID: IBM-OX-PLA-LA, Year: 1989
+Supplier: IBM, ID: IBM-OX-PLA-LA, Year: 1986
+Supplier: IBM, ID: IBM-OX-PLA-LA, Year: 1981
+Supplier: IBM, ID: IBM-OX-PLA-LA, Year: 2018
+Supplier: Intel, ID: INT-EX-ORA-ME, Year: 2016
+Supplier: Intel, ID: INT-EX-ORA-ME, Year: 1986
+Supplier: Intel, ID: INT-EX-ORA-ME, Year: 1990
+Supplier: Intel, ID: INT-EX-ORA-ME, Year: 1985
+Supplier: Intel, ID: INT-EX-ORA-ME, Year: 1994
+Supplier: Intel, ID: INT-EX-ORA-ME, Year: 2010
+Supplier: Lenovo, ID: LEN-IN-SIL-LA, Year: 1985
+Supplier: Lenovo, ID: LEN-IN-SIL-LA, Year: 2018
+Supplier: Philips, ID: PHI-TS-BLU-SM, Year: 2011
+Supplier: Philips, ID: PHI-TS-BLU-SM, Year: 2008
+Supplier: Philips, ID: PHI-TS-BLU-SM, Year: 2001
+Supplier: SONY, ID: SON-XR-BRO-SM, Year: 2007
+Supplier: SONY, ID: SON-XR-BRO-SM, Year: 1988
+Supplier: SONY, ID: SON-XR-BRO-SM, Year: 1984
+Supplier: SONY, ID: SON-XR-BRO-SM, Year: 2011
+Supplier: SONY, ID: SON-XR-BRO-SM, Year: 1980
+Supplier: Samsung, ID: SAM-VK-DBL-LA, Year: 1986
+Supplier: Samsung, ID: SAM-VK-DBL-LA, Year: 2013
+Supplier: Samsung, ID: SAM-VK-DBL-LA, Year: 1985
+Supplier: Samsung, ID: SAM-VK-DBL-LA, Year: 2015
+
+Stack 0:
+Package Type: 0, Color: beige
+Package Type: 0, Color: yellow
+
+Stack 1:
+Package Type: 1, Color: beige
+
+Stack 2:
+Package Type: 2, Color: green
+Package Type: 2, Color: white
+
+
+STATISTICS WHEN CLEANING THE SIMULATION:
+Removing packages...
+3 packages have been removed.
+Cleaning all stacks of packages...
+12 packages have been removed.
+Cleaning shopping queue...
+43 robots have been removed.
+No robots remain in the shopping queue.
+```
