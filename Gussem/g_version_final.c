@@ -2,7 +2,6 @@
 Degree: Artificial Intelligence
 Subject: Fundamentals of Programming 2
 Practical project: 1
-Sara Díez and Gússem Yahia-Cheikh
 
 Simulator - main program
 */
@@ -17,7 +16,6 @@ int packages1Removed = 0;
 int packages2Removed = 0;
 int robotsRemoved = 0;
 
-
 //----------------------------------------------------------General
 // WARNING: do not change this function
 enum EventType GenerateEventType()
@@ -28,7 +26,7 @@ enum EventType GenerateEventType()
 void CheckArguments (int argc, char ** argv)
 {
 	if (argc != 2) {
-        printf("The number of arguments must be two");
+        printf("Usage: %s <number_of_events>\n", argv[0]);
 		exit(1);
     }
 
@@ -111,6 +109,9 @@ void SimulateManagingRobotPackages(struct RobotPackage * RobotPackage)
     // Insert the package in the correct position
     RobotPackage->next = current->next;
     current->next = RobotPackage;
+
+    //printf("Inserted RobotPackage: %s, %s, %d\n", 
+        //RobotPackage->supplier, RobotPackage->id, RobotPackage->year);
 }
 
 // function to remove all the RobotPackages from the list at the end of the program
@@ -119,149 +120,17 @@ void RemoveAllRobotPackages()
 	struct RobotPackage* current = robotPackageList;
     struct RobotPackage* nextNode;
 
-    while (current != NULL) {
-        nextNode = current->next;
-        free(current);
-        current = nextNode;
-    }
-    robotPackageList = NULL;
-}
-
-//----------------------------------------------------------Packages -> different Stacks
-// WARNING: do not change this function
-struct Package * GeneratePackage()
-{
-	// reserve memory for a Package
-	struct Package * Package=malloc(sizeof(struct Package));
-	// initialize the Package's fields
-	enum PackageType type=rand()%3;
-	enum Colors color=rand()%4;
-	Package->type = type;
-	Package->color = color;
-	return Package;
-}
-
-// function to initialize all stacks of Packages 
-struct Package** stacks;
-int* top;
-
-void InitStacks() 
-{
-	stacks = (struct Package**)malloc(3 * sizeof(struct Package*)); // Allocate space for 3 stacks
-	top = (int*)malloc(3 * sizeof(int)); // Allocate space for top indices
-
-	if (!stacks || !top) {
-		printf("Memory allocation failed for stacks.\n");
-		exit(1);
-	}
-
-	for (int i = 0; i < 3; i++) {
-		stacks[i] = (struct Package*)malloc(MAX_CAPACITY * sizeof(struct Package));
-		if (!stacks[i]) {
-			printf("Memory allocation failed for stack %d.\n", i);
-			exit(1);
-		}
-		top[i] = EMPTY_STACK; // Initialize as empty
-	}
-}
-
-// function to print all stacks with all Packages
-void PrintPackages() {
-    for (int i = 0; i < 3; i++) {
-        printf("Stack %d:\n", i);
-        for (int j = 0; j <= top[i]; j++) {
-            printf("Package Type: %d, Color: %s\n", stacks[i][j].type, colorNames[stacks[i][j].color]);
-        }
-        printf("\n");
-    }
-}
-
-// function to remove all packages from a given stack when its MAX_CAPACITY is reached
-void RemoveStack(int stackIndex, struct Package **stacks, int *top) {
-	if (stackIndex == 0) { // Books are in stack 0
-        packages1Removed += (top[stackIndex] + 1);
-    } else if (stackIndex == 1) { // Plates are in stack 1
-        packages2Removed += (top[stackIndex] + 1);
-    } else if (stackIndex == 2) { // Robots are in stack 2
-		robotsRemoved += (top[stackIndex] + 1);
-	}
-	
-    top[stackIndex] = EMPTY_STACK; // Reset stack
-}
-
-// function to simulate putting a generated Package to a corresponding stack depending on the type (size)
-void SimulateClassifyPackage(struct Package * Package)
-{
-	int stackIndex = Package->type;
-
-	if (top[stackIndex] >= MAX_CAPACITY - 1) {
-		RemoveStack(stackIndex, stacks, top);
-	}
-
-	top[stackIndex]++;
-	stacks[stackIndex][top[stackIndex]] = *Package;
-    free(Package);
-}
-
-// function to clean all stacks before the end of the program
-void CleanPackageStacks()
-{
-	for (int i = 0; i < 3; i++) {  // Iterate over all three stacks
-        free(stacks[i]); // Free the allocated memory for each stack
-        stacks[i] = NULL; // Set pointer to NULL to prevent dangling pointer issues
-        top[i] = EMPTY_STACK; // Reset the stack top index
-    }
-    
-    free(stacks); // Free the array of stack pointers
-    stacks = NULL;
-    
-    free(top); // Free the array holding top indices
-    top = NULL;
-}
-
-//----------------------------------------------------------Shopping -> Queue
-// WARNING: do not change this function
-struct Shopping * GenerateShopping()
-{
-	// reserve memory for a Shopping
-	struct Shopping * shopping=malloc(sizeof(struct Shopping));
-	// initialize the shopping's fields
-	int n=rand()%5+1;
-	shopping->numberThingsToBuy = n;
-	nextRobotID++;
-	shopping->robot_id=nextRobotID;
-	return shopping;
-}
-
-// function to print a list of robots in a shopping queue
-void PrintShopping() 
-{
-	printf("\nSTATISTICS WHEN CLEANING THE SIMULATION:\n");
-    printf("Removing packages...\n");
-    printf("%d packages have been removed.\n", packages1Removed);
-
-    printf("Cleaning all stacks of packages...\n");
-    printf("%d packages have been removed.\n", packages2Removed);
-
-    printf("Cleaning shopping queue...\n");
-    printf("%d robots have been removed.\n", robotsRemoved);
-
-	//Printing all the robotd in the queue
-	struct Shopping* current=queueFirst;
-	if (current == NULL){
-		printf("No robots remain in the shopping queue.\n");
-	} else {
-		printf("Robots remaining in the shopping queue:\n");
-		int count=0;
+    int count=0;
         while (current != NULL) {
-	        count++;
-	        printf("Robot ID: %d, Items to buy: %d\n", current->robot_id, current->numberThingsToBuy);
-	        current=current->next;
+            count++;
+            printf("Robot ID: %d, Items to buy: %d
+", current->robot_id, current->numberThingsToBuy);
+            current=current->next;
         }
-        printf("Total remaining robots in queue: %d\n", count);
+        printf("Total remaining robots in queue: %d
+", count);
 	}
 }
-
 
 // function to add a robot to a shopping queue
 void AddToQueue(struct Shopping * shopping)
@@ -277,6 +146,8 @@ void AddToQueue(struct Shopping * shopping)
         queueLast->next = shopping;
         queueLast = shopping;
     }
+
+    //printf("Robot ID=%d added to the shopping queue with %d items to buy.\n", shopping->robot_id, shopping->numberThingsToBuy);
 }
 
 // function to remove a robot from the queue and serve it
@@ -298,6 +169,7 @@ int Dequeue ()
         queueLast = NULL;
     }
 
+    //FUNCIONA printf("Robot ID=%d is now shopping, buying %d items.\n", temp->robot_id, shoppingTime);
     robotsRemoved++;
     free(temp); // Free the memory allocated for the removed robot
 
@@ -307,14 +179,29 @@ int Dequeue ()
 // function to simulate the time the robot is in the queue
 void UpdateShoppingQueue ()
 {
-    // Only the first robot in the queue is actively shopping
+	// If the queue is not empty
     if (queueFirst != NULL) {
-        // Decrease one item (simulate one unit of time)
-        queueFirst->numberThingsToBuy--;
+        // Process the first robot in the queue
+        struct Shopping *current = queueFirst;
+        
+        // If the robot's shopping is not complete, simulate time by buying 1 item per event
+        while (current != NULL) {
+            if (current->numberThingsToBuy > 0) {
+                // Decrease the number of things the robot needs to buy (simulate 1 event)
+                current->numberThingsToBuy--;
+                
+                //printf("Robot ID=%d is shopping, %d items left.\n", current->robot_id, current->numberThingsToBuy);
+            }
 
-        // If the robot has finished shopping, remove it from the queue
-        if (queueFirst->numberThingsToBuy <= 0) {
-            Dequeue(); // This will also free the robot and update the queue
+            // If the robot has finished shopping, dequeue it from the queue
+            if (current->numberThingsToBuy == 0) {
+                // Robot finished shopping, remove it from the queue
+                Dequeue();
+                break; // Move to the next robot (if there are any left)
+            }
+            
+            // Move to the next robot in the queue if the current one is still shopping
+            current = current->next;
         }
     }
 }
@@ -335,6 +222,8 @@ void SimulateGoForShopping(struct Shopping * shopping)
 
     // Make sure the new robot's next pointer is NULL as it's the last in the queue
     shopping->next = NULL;
+
+    //printf("Robot ID=%d with %d items to buy has joined the shopping queue.\n", shopping->robot_id, shopping->numberThingsToBuy);
 }
 
 // function to clean shopping queue before the end of the program
@@ -400,7 +289,7 @@ void SimulationLoop(int EventNumbers)
 
 int main (int argc, char ** argv)
 {
-	printf ("Starting... \n");
+    	printf ("Starting... \n");
 	CheckArguments(argc, argv);
     int EventNumbers = atoi(argv[1]);
 	SimulationLoop(EventNumbers);

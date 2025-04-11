@@ -41,6 +41,7 @@ struct RobotPackage
 
 #define NUMBER_OF_STACK 3
 #define MAX_CAPACITY 3
+#define EMPTY_STACK -1
 
 enum PackageType { small=0, medium=1, large=2 };
 enum Colors { white=0, green=1, yellow=2, beige=3 };
