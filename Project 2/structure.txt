@@ -1,0 +1,42 @@
+FUNCITONS TO ADD
+Section II:
+WORLD JOURNEY
+    RouteSearch()
+    struct RoadMap{
+        int city_id;
+        int total_cost;
+        struct RoadMap * next;
+    }
+    addToRoadMap()
+    printRoadMap()
+    deleteAllRoadMap() [Before the program finishes, it will delete all the cities of the list]
+ANCESTOR'S TREE 
+    - Binary tree
+    - Our parents at the root of the tree
+    - We have to define a data structure
+        * 2 parents
+        * 2 cities 
+    Creating the tree twice:
+        - With DFS: 
+             you will create a tree in a depth-first way, i.e., first you will create all nodes for mothers’ side,
+            and then, if there is no more possibility to go deeper, for the father’s side.
+        - With BFS: 
+            you will create a tree in a breadthfirst way, i.e., first you will create all nodes for the same
+            level (for mother’s side, and then for father’s side) and then you will continue with the next lower level of the tree.
+    struct FamilyTreeNode {
+        char mother_name[10];
+        char father_name[10];
+        int city_id;
+        struct FamilyTreeNode * mother_parents;
+        struct FamilyTreeNode * father_parents;
+    }
+    struct CivilRegistry {
+        int city_id;
+        char city_name[20];
+        char mother_name[10];
+        char father_name[10];
+        int mother_parents_city_id;
+        int father_parents_city_id;
+    }
+    
+    CivilRegistry citiesInfo[NUMBER_CITIES];
