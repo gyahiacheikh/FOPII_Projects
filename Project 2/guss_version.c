@@ -117,11 +117,45 @@ struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
     return node;
 }
 
-void printFamilyTree(struct FamilyTreeNode* node, int level){
-    if (node == NULL) {
-        printf("-> NULL node\n");
-        return;
+//BFS
+/*Pseudocode:
+create a queue Q 
+mark v as visited and put v into Q 
+while Q is non-empty 
+    remove the head u of Q 
+    mark and enqueue all (unvisited) neighbours of u
+
+
+// Function to perform BFS codigo plantilla
+void bfs(struct Node* root) {
+    if (root == NULL) return;
+
+    // Create a queue for BFS
+    struct Node* queue;
+    int front = 0, rear = 0;
+
+    // Enqueue root and initialize rear
+    queue[rear++] = root;
+
+    while (front != rear) {
+        // Print front of queue and remove it from queue
+        struct Node* node = queue[front++];
+        printf("%d ", node->data);
+
+        // Enqueue left child
+        if (node->left != NULL) {
+            queue[rear++] = node->left;
+        }
+
+        // Enqueue right child
+        if (node->right != NULL) {
+            queue[rear++] = node->right;
+        }
     }
+}
+*/
+void printFamilyTree(struct FamilyTreeNode* node, int level){
+    if (node==NULL) return;
     for (int i = 0; i < level; i++) printf("-> ");
     printf("%s and %s (", node->motherName, node->fatherName);
     PrintCityName(node->city_id);
