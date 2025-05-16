@@ -93,6 +93,44 @@ int RouteSearch(int source, int destination, struct RoadMap**roadmap){
     return total_cost;
 }
 
+//DFS
+
+struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
+    struct FamilyTreeNode*node=malloc(sizeof(struct FamilyTreeNode));
+    if (node==NULL){
+        printf("ERROR: No se pudo reservar memoria para el nodo.\n");
+        return NULL;
+    }
+    strcpy(node->motherName, citiesInfo[city_id].mother_name);
+    strcpy(node->fatherName, citiesInfo[city_id].father_name);
+    node->city_id=city_id;
+    node->mother_parents=NULL;
+    node->father_parents=NULL;
+
+    if(citiesInfo[city_id].mother_parents_city_id != -1){
+        node->mother_parents =createFamilyTreeDFS(citiesInfo[city_id].mother_parents_city_id);
+    }
+    if(citiesInfo[city_id].father_parents_city_id != -1){
+        node->father_parents =createFamilyTreeDFS(citiesInfo[city_id].father_parents_city_id);
+    }
+
+    return node;
+}
+
+void printFamilyTree(struct FamilyTreeNode* node, int level){
+    if (node == NULL) {
+        printf("-> NULL node\n");
+        return;
+    }
+    for (int i = 0; i < level; i++) printf("-> ");
+    printf("%s and %s (", node->motherName, node->fatherName);
+    PrintCityName(node->city_id);
+    printf(")\n");
+
+    printFamilyTree(node->mother_parents, level + 1);
+    printFamilyTree(node->father_parents, level + 1);
+}
+
 int main(){
     struct RoadMap*roadmap=NULL;
     // mas pruebas
@@ -108,6 +146,12 @@ int main(){
     printf("\nTotal cost: %d\n", total_cost);
 
     deleteAllRoadMap(&roadmap);
+
+    printf("Test: root = %s and %s\n", citiesInfo[0].mother_name, citiesInfo[0].father_name);
+
+    printf("\nDFS Ancestor Tree:\n");
+    struct FamilyTreeNode *tree = createFamilyTreeDFS(0);  // Empiezas por ciudad 0 (Barcelona)
+    printFamilyTree(tree, 0);
 
     return 0;
 }
