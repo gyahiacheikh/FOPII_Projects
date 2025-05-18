@@ -29,7 +29,7 @@ void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){ //afegeix 
     }
 
 }
-
+*/
 void printRoadMap(struct RoadMap*head){ //pa ver la rout
     struct RoadMap*temp=head;
     while (temp!=NULL){
@@ -38,7 +38,7 @@ void printRoadMap(struct RoadMap*head){ //pa ver la rout
         temp=temp->next;
     }
 }
-*/
+
 
 void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){
     if (*head != NULL){
