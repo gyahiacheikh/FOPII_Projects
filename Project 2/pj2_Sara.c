@@ -9,6 +9,7 @@
 
 // The first part of the project must be done with graph structs. 13/05 Sara
 // The header has 3 structs defined: struct CivilRegistry, struct FamilyTreeNode and struct RoadMap. 13/05 Sara
+//Veo que has cogido partes mias me parece top reinona eso si me dijiste que me dejaste un comentario noloveo uuu guss 19/05
 
 
 
@@ -184,7 +185,7 @@ struct FamilyTreeNode*createFamilyTreeBFS(int city_id){
 
 void BFSroute()
 
-// He pegado tu main tal cual guss
+// He pegado tu main tal cual guss (perfe -guss 19/5)
 int main(){
     struct RoadMap*roadmap=NULL;
 
