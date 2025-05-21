@@ -371,6 +371,28 @@ void printFormattedRoadMap(struct RoadMap* head) {
 }
 
 
+/*
+HOLIIIIIS tenemos un par d errores en el DFS. Esto es lo que printea:abortDFS -> Names:
+Maria and Jordi (City: Barcelona)
+-> Louise and Paul (City: Paris)
+-> -> Anna and Kazimierz (City: Varsovia)
+-> -> Agnese and Leonardo (City: Rome)
+-> Eva and Albert (City: Zurich)
+-> -> Madalena and Louren├ºo (City: Lisbon)
+-> -> Amber and Finn (City: Amsterdam)
+
+DEBERIA printear esto:
+-> Louise and Pol (Paris)
+-> Eva and Albert (Zurich)
+->-> Anna and Kazimierz (Varsovia)
+->-> Agnese and Leonardo (Rome)
+->-> Madalena and Lourenc¸o (Lisboa)
+->-> Amber and Fin (Amsterdam)
+
+Es decir, los que tienen solo una flecha -> deberian ir primero. Asi la suma de los costos seria menor (deberia serlo)
+
+*/
+
 
 
 int main(){
