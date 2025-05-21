@@ -1,111 +1,36 @@
-//Sara's version
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include "small.h" // Me da la adjecent matrix y los registros
 
-#include "small.h"
+#define INF 99999999 //Infinite cost for i==j
 
-// The first part of the project must be done with graph structs. 13/05 Sara
-// The header has 3 structs defined: struct CivilRegistry, struct FamilyTreeNode and struct RoadMap. 13/05 Sara
-//Veo que has cogido partes mias me parece top reinona eso si me dijiste que me dejaste un comentario noloveo uuu guss 19/05
-
-
-
-// El dijkstra lo he copiado tal cual del chatgpt, deberiamos hacerlo nosotras pero asi podia seguir la funcion q estaba haciendo
-#define INF 1000000
-void dijkstra(int graph[NUMBER_CITIES][NUMBER_CITIES], int n, int start, int dist[], int prev[]) {
-    int visited[NUMBER_CITIES] = {0};
-
-    for (int i = 0; i < n; i++) {
-        dist[i] = INF;
-        prev[i] = -1;
-    }
-    dist[start] = 0;
-
-    for (int count = 0; count < n - 1; count++) {
-        int min = INF, u = -1;
-
-        // Find the unvisited node with the smallest distance
-        for (int v = 0; v < n; v++) {
-            if (!visited[v] && dist[v] <= min) {
-                min = dist[v];
-                u = v;
-            }
-        }
-
-        if (u == -1) break; // no reachable node
-
-        visited[u] = 1;
-
-        for (int v = 0; v < n; v++) {
-            if (!visited[v] && graph[u][v] && dist[u] + graph[u][v] < dist[v]) {
-                dist[v] = dist[u] + graph[u][v];
-                prev[v] = u;
-            }
-        }
-    }
+void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si aca
+    printf("City: %s", citiesInfo[city_id].city_name);
 }
 
-int RouteSearch(struct CivilRegistry * citiesInfo, int id_sourcecity, int id_destcity, struct RoadMap **roadmap) {
-    int i = citiesInfo[id_sourcecity].city_id;
-    int j = citiesInfo[id_destcity].city_id;
-
-    if (adjacency_matrix[i][j] != 0) {
-        addToRoadMap(roadmap, j, adjacency_matrix[i][j]);
-        return adjacency_matrix[i][j];
-    } else {
-        int distance[NUMBER_CITIES];
-        int previous[NUMBER_CITIES];
-        dijkstra(adjacency_matrix, NUMBER_CITIES, i, distance, previous);
-
-        if (distance[j] == INF) {
-            printf("No route exists from %s to %s.\n", citiesInfo[i].city_name, citiesInfo[j].city_name);
-            return INF;
-        }
-
-        // Reconstruct path (reversed order)
-        int path[NUMBER_CITIES];
-        int count = 0, temp = j;
-        while (temp != -1) {
-            path[count++] = temp;
-            temp = previous[temp];
-        }
-
-        // Add path to roadmap in correct order
-        for (int k = count - 1; k >= 0; k--) {
-            int cost = (k == 0) ? 0 : adjacency_matrix[path[k - 1]][path[k]];
-            addToRoadMap(roadmap, path[k], cost);
-        }
-
-        return distance[j];
-    }
-}
-
-
-void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){ //afegeix un nou node al final de la llista 13/05 Guss
+// 2. RoadMap type shi
+// RoadMap es una llista enllaçada on cada nodo es una ciutat, guarda el cost total fins la ciutat aquella i apunta al seguent ciutat (node)
+/*
+void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){ //afegeix un nou node al final de la llista
     struct RoadMap *new_node= malloc(sizeof(struct RoadMap));
     new_node->city_id=city_id; 
     new_node->total_cost =total_cost;
     new_node-> next= NULL; 
 
     if (*head == NULL){
-        *head= new_node; //If list empty creates node 13/05 Guss
-    } else { // Sino pues al final ou yeah
+        *head= new_node; //If list empty creates node
+    } else{ // Sino pues al final ou yeah
         struct RoadMap*temp= *head;
         while(temp->next!= NULL) temp=temp->next;
         temp->next= new_node;
     }
 
 }
-
-
-void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si aca
-    printf("City: %s", citiesInfo[city_id].city_name);
-}
-
-void printRoadMap(struct RoadMap*head){ //pa ver la rout 13/05 Guss
+*/
+void printRoadMap(struct RoadMap*head){ //pa ver la rout
     struct RoadMap*temp=head;
     while (temp!=NULL){
         PrintCityName(temp->city_id);
@@ -114,15 +39,147 @@ void printRoadMap(struct RoadMap*head){ //pa ver la rout 13/05 Guss
     }
 }
 
-void deleteAllRoadMap(struct RoadMap **head){//LLAMAR AL FINAL DEL PROGRAMA SOLO EH 13/05 Guss
+
+
+void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){
+    if (*head != NULL){
+        struct RoadMap*last = *head;
+        while (last->next != NULL) last = last->next;
+        if (last->city_id == city_id) return; // Evita duplicados consecutivos
+    }
+
+    struct RoadMap *new_node = malloc(sizeof(struct RoadMap));
+    new_node->city_id = city_id; 
+    new_node->total_cost = total_cost;
+    new_node->next = NULL;
+
+    if (*head == NULL){
+        *head = new_node;
+    } else {
+        struct RoadMap*temp = *head;
+        while(temp->next != NULL) temp = temp->next;
+        temp->next = new_node;
+    }
+}
+void deleteAllRoadMap(struct RoadMap **head){//LLAMAR AL FINAL DEL PROGRAMA SOLO EH
     struct RoadMap*temp;
     while(*head!=NULL){
         temp=*head;
         *head=(*head)->next;
         free(temp);
     }
+
 }
 
+/*
+FALTA:
+    - muderfucking fuck heuristics (el routesearch)
+    - El DFS (deberia follar serpientes) y BFS (bolleras, fumetas, sinceras)
+    - el printeo de los trees
+    - y bueno otras cosas que seguro que me dejo
+sharaut sara del 13 de mayo si estas viendo esto dimelou
+
+*/
+/*
+int RouteSearch(int source, int destination, struct RoadMap**roadmap){
+    int visited[NUMBER_CITIES]={0};
+    int current=source;
+    int total_cost=0;
+    while (current!=destination){
+        visited[current]=1;
+        int next_city=-1;
+        int min_cost=INF; //garanteix que qualsevol ciutat sigui mes barata 
+
+        //provem si es pot directament
+        if (adjacency_matrix[current][destination]>0 && adjacency_matrix[current][destination]<min_cost){
+            next_city=destination;
+            min_cost=adjacency_matrix[current][destination];
+        }
+        //aqui busque, la ciutat mes barata connectada a current 
+        for(int i=0;i<NUMBER_CITIES;i++){
+            if(!visited[i]&&adjacency_matrix[current][i]>0 && adjacency_matrix[current][i]<min_cost){
+                next_city=i;
+                min_cost=adjacency_matrix[current][i];
+            }
+        }
+        // si no hi han mes ciutats disponibles doncs que salti un missatge
+        if (next_city==-1){
+            printf("We couldn't find a rout from %d to %d. \n", source, destination);
+            return -1;
+        }
+
+        //Actualizamos
+        total_cost+=min_cost;
+        addToRoadMap(roadmap,next_city,total_cost);
+        current=next_city;
+    }
+    return total_cost;
+}
+*/
+
+int RouteSearch(int source, int destination, struct RoadMap** roadmap){
+    int dist[NUMBER_CITIES];
+    int visited[NUMBER_CITIES] = {0};
+    int prev[NUMBER_CITIES];
+    
+    for(int i=0; i<NUMBER_CITIES; i++){
+        dist[i]=INF;
+        prev[i]=-1;
+    }
+
+    dist[source]=0;
+
+    for(int count=0; count<NUMBER_CITIES-1; count++){
+        int u=-1;
+        int min=INF;
+
+        // Encuentra el nodo no visitado con menor distancia
+        for(int i=0; i<NUMBER_CITIES; i++){
+            if(!visited[i] && dist[i]<min){
+                min=dist[i];
+                u=i;
+            }
+        }
+
+        if(u==-1) break; // No hay más alcanzables
+
+        visited[u]=1;
+
+        // Actualiza distancias a los vecinos
+        for(int v=0; v<NUMBER_CITIES; v++){
+            if(adjacency_matrix[u][v]>0 && !visited[v]){
+                int new_dist = dist[u] + adjacency_matrix[u][v];
+                if(new_dist < dist[v]){
+                    dist[v] = new_dist;
+                    prev[v] = u;
+                }
+            }
+        }
+    }
+
+    if(dist[destination]==INF){
+        printf("We couldn't find a route from %s to %s.\n", 
+            citiesInfo[source].city_name, citiesInfo[destination].city_name);
+        return -1;
+    }
+
+    // Reconstruye el camino desde destination hasta source
+    int path[NUMBER_CITIES];
+    int path_length=0;
+    int current=destination;
+    while(current!=-1){
+        path[path_length++] = current;
+        current = prev[current];
+    }
+
+    // Inserta en roadmap en orden correcto (source -> ... -> destination)
+    for(int i=path_length-1; i>=0; i--){
+        addToRoadMap(roadmap, path[i], dist[path[i]]);
+    }
+
+    return dist[destination];
+}
+//DFS
 
 struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
     struct FamilyTreeNode*node=malloc(sizeof(struct FamilyTreeNode));
@@ -146,8 +203,7 @@ struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
     return node;
 }
 
-
-void DFSroute(struct FamilyTreeNode*node, struct RoadMap**roadmap){ //Guss's code
+void DFSroute(struct FamilyTreeNode*node, struct RoadMap**roadmap){
     if (node==NULL) return;
     if (node->mother_parents != NULL){
         RouteSearch(node->city_id, node->mother_parents->city_id, roadmap);
@@ -161,42 +217,235 @@ void DFSroute(struct FamilyTreeNode*node, struct RoadMap**roadmap){ //Guss's cod
 }
 
 
-struct FamilyTreeNode*createFamilyTreeBFS(int city_id){
-    struct FamilyTreeNode*node=malloc(sizeof(struct FamilyTreeNode));
-    if (node==NULL){
-        printf("ERROR: No se pudo reservar memoria para el nodo.\n");
-        return NULL;
-    }
-    strcpy(node->motherName, citiesInfo[city_id].mother_name);
-    strcpy(node->fatherName, citiesInfo[city_id].father_name);
-    node->city_id=city_id;
-    node->mother_parents=NULL;
-    node->father_parents=NULL;
+//BFS
+/*Pseudocode:
+create a queue Q 
+mark v as visited and put v into Q 
+while Q is non-empty 
+    remove the head u of Q 
+    mark and enqueue all (unvisited) neighbours of u
 
-    if(citiesInfo[city_id].mother_parents_city_id != -1){
-        node->mother_parents = createFamilyTreeBFS(citiesInfo[city_id].mother_parents_city_id);
-    }
-    if(citiesInfo[city_id].father_parents_city_id != -1){
-        node->father_parents = createFamilyTreeBFS(citiesInfo[city_id].father_parents_city_id);
-    }
 
-    return node;
+ Function to perform BFS codigo plantilla
+*/
+
+
+struct FamilyTreeNode* createFamilyTreeBFS(int city_id)
+{
+    struct FamilyTreeNode* root = malloc(sizeof(struct FamilyTreeNode));
+    if (!root) return NULL;
+
+    strcpy(root->motherName, citiesInfo[city_id].mother_name);
+    strcpy(root->fatherName, citiesInfo[city_id].father_name);
+    root->city_id = city_id;
+    root->mother_parents = root->father_parents = NULL;
+
+    struct FamilyTreeNode* q[NUMBER_CITIES];
+    int f = 0, r = 0;
+    q[r++] = root;
+
+    while (f < r) {
+        struct FamilyTreeNode* cur = q[f++];
+        int mid = citiesInfo[cur->city_id].mother_parents_city_id;
+        int fid = citiesInfo[cur->city_id].father_parents_city_id;
+
+        if (mid != -1) {
+            struct FamilyTreeNode* m = malloc(sizeof(struct FamilyTreeNode));
+            strcpy(m->motherName, citiesInfo[mid].mother_name);
+            strcpy(m->fatherName, citiesInfo[mid].father_name);
+            m->city_id = mid;
+            m->mother_parents = m->father_parents = NULL;
+            cur->mother_parents = m;
+            q[r++] = m;
+        }
+        if (fid != -1) {
+            struct FamilyTreeNode* p = malloc(sizeof(struct FamilyTreeNode));
+            strcpy(p->motherName, citiesInfo[fid].mother_name);
+            strcpy(p->fatherName, citiesInfo[fid].father_name);
+            p->city_id = fid;
+            p->mother_parents = p->father_parents = NULL;
+            cur->father_parents = p;
+            q[r++] = p;
+        }
+    }
+    return root;
 }
 
-void BFSroute()
 
-// He pegado tu main tal cual guss (perfe -guss 19/5)
+void BFSroute(struct FamilyTreeNode* root, struct RoadMap** roadmap) {
+    if (root == NULL) return;
+
+    // Create a queue for BFS
+    struct FamilyTreeNode* queue[NUMBER_CITIES];  // Cola de nodos juajauaja
+    int front = 0, rear = 0;
+
+    // Enqueue root and initialize rear
+    queue[rear++] = root;
+
+    while (front < rear) {
+        // Print front of queue and remove it from queue
+        struct FamilyTreeNode* current = queue[front++];
+
+        if (current->mother_parents != NULL) {
+            RouteSearch(current->city_id, current->mother_parents->city_id, roadmap);
+            queue[rear++] = current->mother_parents;
+        }
+
+        // same here with the papa
+        if (current->father_parents != NULL) {
+            RouteSearch(current->city_id, current->father_parents->city_id, roadmap);
+            queue[rear++] = current->father_parents;
+        }
+    }
+}
+
+void printFamilyTree(struct FamilyTreeNode* node, int level){
+    if (node==NULL) return;
+    for (int i = 0; i < level; i++) printf("-> ");
+    printf("%s and %s (", node->motherName, node->fatherName);
+    PrintCityName(node->city_id);
+    printf(")\n");
+
+    printFamilyTree(node->mother_parents, level + 1);
+    printFamilyTree(node->father_parents, level + 1);
+}
+/*
 int main(){
     struct RoadMap*roadmap=NULL;
+    // mas pruebas
+    int source=0;
+    int destination=3;
 
-    //PRUEBAAAAAS
-    addToRoadMap(&roadmap, 0, 0);
-    addToRoadMap(&roadmap, 1, 50);   
-    addToRoadMap(&roadmap, 2, 180);
+    addToRoadMap(&roadmap, source,0);
 
-    printf("Actual route: (DEMO)\n");
+    int total_cost= RouteSearch(source, destination, &roadmap);
+
+    printf("\nFinal route (DEMO): \n");
     printRoadMap(roadmap);
+    printf("\nTotal cost: %d\n", total_cost);
+
     deleteAllRoadMap(&roadmap);
+
+    printf("Test: root = %s and %s\n", citiesInfo[0].mother_name, citiesInfo[0].father_name);
+
+    printf("\nDFS Ancestor Tree:\n");
+    struct FamilyTreeNode *tree = createFamilyTreeDFS(0);  // Empiezas por ciudad 0 (Barcelona)
+    printFamilyTree(tree, 0);
+
+    return 0;
+}
+*/
+
+void printFormattedRoadMap(struct RoadMap* head) {
+    if (!head || !head->next) return;
+
+    struct RoadMap* start = head;
+    struct RoadMap* current = head->next;
+
+    printf("%s", citiesInfo[start->city_id].city_name);
+    int segment_cost = 0;
+
+    while (current != NULL) {
+        int diff = current->total_cost - start->total_cost;
+
+        // Detectamos si el segmento cambia (el total_cost se ha reiniciado o disminuido)
+        if (diff <= 0) {
+            // Cerramos el segmento anterior
+            printf(" %d\n", segment_cost);
+
+            // Reiniciamos para nuevo segmento
+            segment_cost = 0;
+            printf("%s", citiesInfo[current->city_id].city_name);
+        } else {
+            // Mismo segmento, sumamos coste
+            printf("-%s", citiesInfo[current->city_id].city_name);
+            segment_cost = diff;
+        }
+
+        start = current;
+        current = current->next;
+    }
+
+    // Último segmento
+    printf(" %d\n", segment_cost);
+}
+
+
+
+
+int main(){
+    // DFS BLOCK
+    printf("Ancestors’ tree:\n");
+    printf("DFS -> Names:\n");
+
+    struct FamilyTreeNode* treeDFS = createFamilyTreeDFS(0);
+    printFamilyTree(treeDFS, 0);
+
+    struct RoadMap* roadmapDFS = NULL;
+    DFSroute(treeDFS, &roadmapDFS);
+
+    printf("\nPartial road map:\n");
+    printFormattedRoadMap(roadmapDFS);
+
+    printf("Complete Road Map:\n");
+    struct RoadMap* temp = roadmapDFS;
+    while (temp != NULL) {
+        printf("%s", citiesInfo[temp->city_id].city_name);
+        if (temp->next != NULL) printf("-");
+        temp = temp->next;
+    }
+
+    int total=0;
+    if (roadmapDFS != NULL) {
+        struct RoadMap* first = roadmapDFS;
+        struct RoadMap* last = roadmapDFS;
+        while (last->next != NULL){
+            last = last->next;
+            total += last->total_cost - first->total_cost;
+        }
+        
+    }
+    printf("\nTotal cost: %d\n", total);
+
+    deleteAllRoadMap(&roadmapDFS);
+
+    printf("----------------------------------\n");
+
+    //BFS BLOCK
+    printf("BFS -> Names:\n");
+
+    struct FamilyTreeNode* treeBFS = createFamilyTreeBFS(0);
+    printFamilyTree(treeBFS, 0);
+
+    struct RoadMap* roadmapBFS = NULL;
+    BFSroute(treeBFS, &roadmapBFS);
+
+    printf("\nPartial road map:\n");
+    // igual que DFS pero siguiendo orden BFS
+    printFormattedRoadMap(roadmapBFS);
+
+    printf("Complete Road Map:\n");
+    // igual que DFS
+    struct RoadMap* temp2 = roadmapBFS;
+    while (temp2 != NULL) {
+        printf("%s", citiesInfo[temp2->city_id].city_name);
+        if (temp2->next != NULL) printf("-");
+        temp2 = temp2->next;
+    }
+
+    int total2 = 0;
+    if (roadmapBFS != NULL) {
+        struct RoadMap* first = roadmapBFS;
+        struct RoadMap* last = roadmapBFS;
+        while (last->next != NULL){
+            last = last->next;
+            total += last->total_cost - first->total_cost;
+        }
+        
+    }
+    printf("\nTotal cost: %d\n", total);
+
+    deleteAllRoadMap(&roadmapBFS);
 
     return 0;
 }
