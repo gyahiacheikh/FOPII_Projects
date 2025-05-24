@@ -117,39 +117,30 @@ int RouteSearch(int source, int destination, struct RoadMap**roadmap){
 }
 */
 
-int RouteSearch(int source, int destination, struct RoadMap** roadmap){
-    int dist[NUMBER_CITIES];
-    int visited[NUMBER_CITIES] = {0};
-    int prev[NUMBER_CITIES];
-    
-    for(int i=0; i<NUMBER_CITIES; i++){
-        dist[i]=INF;
-        prev[i]=-1;
+int RouteSearch(int source, int destination, struct RoadMap** roadmap, int cost_offset) {
+    int dist[NUMBER_CITIES], visited[NUMBER_CITIES] = {0}, prev[NUMBER_CITIES];
+    for (int i = 0; i < NUMBER_CITIES; i++) {
+        dist[i] = INF;
+        prev[i] = -1;
     }
+    dist[source] = 0;
 
-    dist[source]=0;
-
-    for(int count=0; count<NUMBER_CITIES-1; count++){
-        int u=-1;
-        int min=INF;
-
-        // Encuentra el nodo no visitado con menor distancia
-        for(int i=0; i<NUMBER_CITIES; i++){
-            if(!visited[i] && dist[i]<min){
-                min=dist[i];
-                u=i;
+    for (int count = 0; count < NUMBER_CITIES - 1; count++) {
+        int u = -1, min = INF;
+        for (int i = 0; i < NUMBER_CITIES; i++) {
+            if (!visited[i] && dist[i] < min) {
+                min = dist[i];
+                u = i;
             }
         }
 
-        if(u==-1) break; // No hay más alcanzables
+        if (u == -1) break;
+        visited[u] = 1;
 
-        visited[u]=1;
-
-        // Actualiza distancias a los vecinos
-        for(int v=0; v<NUMBER_CITIES; v++){
-            if(adjacency_matrix[u][v]>0 && !visited[v]){
+        for (int v = 0; v < NUMBER_CITIES; v++) {
+            if (adjacency_matrix[u][v] > 0 && !visited[v]) {
                 int new_dist = dist[u] + adjacency_matrix[u][v];
-                if(new_dist < dist[v]){
+                if (new_dist < dist[v]) {
                     dist[v] = new_dist;
                     prev[v] = u;
                 }
@@ -157,28 +148,42 @@ int RouteSearch(int source, int destination, struct RoadMap** roadmap){
         }
     }
 
-    if(dist[destination]==INF){
-        printf("We couldn't find a route from %s to %s.\n", 
-            citiesInfo[source].city_name, citiesInfo[destination].city_name);
+    if (dist[destination] == INF) {
+        printf("No route from %s to %s.\n", citiesInfo[source].city_name, citiesInfo[destination].city_name);
         return -1;
     }
 
-    // Reconstruye el camino desde destination hasta source
+    // Rebuild the path in correct order
     int path[NUMBER_CITIES];
-    int path_length=0;
-    int current=destination;
-    while(current!=-1){
-        path[path_length++] = current;
+    int length = 0, current = destination;
+    while (current != -1) {
+        path[length++] = current;
         current = prev[current];
     }
 
-    // Inserta en roadmap en orden correcto (source -> ... -> destination)
-    for(int i=path_length-1; i>=0; i--){
-        addToRoadMap(roadmap, path[i], dist[path[i]]);
+    // Find the tail of the roadmap
+    struct RoadMap* last = *roadmap;
+    int last_id = -1;
+    while (last && last->next) last = last->next;
+    if (last) last_id = last->city_id;
+
+    // Add only *new* cities from the path
+    for (int i = length - 1; i >= 0; i--) {
+        int city = path[i];
+        if (city == last_id) continue; // skip already added
+        addToRoadMap(roadmap, city, dist[city] + cost_offset);
     }
 
     return dist[destination];
 }
+
+
+int getCurrentTotalCost(struct RoadMap* roadmap) {
+    if (!roadmap) return 0;
+    while (roadmap->next != NULL) roadmap = roadmap->next;
+    return roadmap->total_cost;
+}
+
 //DFS
 
 struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
@@ -206,12 +211,14 @@ struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
 void DFSroute(struct FamilyTreeNode*node, struct RoadMap**roadmap){
     if (node==NULL) return;
     if (node->mother_parents != NULL){
-        RouteSearch(node->city_id, node->mother_parents->city_id, roadmap);
+        int offset = getCurrentTotalCost(*roadmap);
+        RouteSearch(node->city_id, node->mother_parents->city_id, roadmap, offset);
         DFSroute(node->mother_parents, roadmap); //pedazo recursion aqui chaval
     }
     //misma shit con el papa
     if (node->father_parents != NULL){
-        RouteSearch(node->city_id, node->father_parents->city_id, roadmap);
+        int offset = getCurrentTotalCost(*roadmap);
+        RouteSearch(node->city_id, node->father_parents->city_id, roadmap, offset);
         DFSroute(node->father_parents, roadmap); //pedazo recursion aqui chaval
     }
 }
@@ -287,13 +294,15 @@ void BFSroute(struct FamilyTreeNode* root, struct RoadMap** roadmap) {
         struct FamilyTreeNode* current = queue[front++];
 
         if (current->mother_parents != NULL) {
-            RouteSearch(current->city_id, current->mother_parents->city_id, roadmap);
+            int offset = getCurrentTotalCost(*roadmap);
+            RouteSearch(current->city_id, current->mother_parents->city_id, roadmap, offset);
             queue[rear++] = current->mother_parents;
         }
 
         // same here with the papa
         if (current->father_parents != NULL) {
-            RouteSearch(current->city_id, current->father_parents->city_id, roadmap);
+            int offset = getCurrentTotalCost(*roadmap);
+            RouteSearch(current->city_id, current->father_parents->city_id, roadmap, offset);
             queue[rear++] = current->father_parents;
         }
     }
@@ -339,36 +348,37 @@ int main(){
 void printFormattedRoadMap(struct RoadMap* head) {
     if (!head || !head->next) return;
 
-    struct RoadMap* start = head;
-    struct RoadMap* current = head->next;
+    struct RoadMap* current = head;
+    struct RoadMap* next = current->next;
 
-    printf("%s", citiesInfo[start->city_id].city_name);
     int segment_cost = 0;
 
-    while (current != NULL) {
-        int diff = current->total_cost - start->total_cost;
+    printf("%s", citiesInfo[current->city_id].city_name);
 
-        // Detectamos si el segmento cambia (el total_cost se ha reiniciado o disminuido)
-        if (diff <= 0) {
-            // Cerramos el segmento anterior
-            printf(" %d\n", segment_cost);
+    while (next != NULL) {
+        int from = current->city_id;
+        int to = next->city_id;
+        int cost = adjacency_matrix[from][to];
 
-            // Reiniciamos para nuevo segmento
-            segment_cost = 0;
-            printf("%s", citiesInfo[current->city_id].city_name);
+        // Si hay una conexión válida, es parte del mismo segmento
+        if (cost > 0) {
+            printf("-%s", citiesInfo[to].city_name);
+            segment_cost += cost;
         } else {
-            // Mismo segmento, sumamos coste
-            printf("-%s", citiesInfo[current->city_id].city_name);
-            segment_cost = diff;
+            // Si no hay conexión directa, nuevo segmento
+            printf(" %d\n", segment_cost);
+            segment_cost = 0;
+            printf("%s", citiesInfo[to].city_name);
         }
 
-        start = current;
-        current = current->next;
+        current = next;
+        next = next->next;
     }
 
-    // Último segmento
+    // Último tramo
     printf(" %d\n", segment_cost);
 }
+
 
 
 /*
@@ -417,16 +427,8 @@ int main(){
         temp = temp->next;
     }
 
-    int total=0;
-    if (roadmapDFS != NULL) {
-        struct RoadMap* first = roadmapDFS;
-        struct RoadMap* last = roadmapDFS;
-        while (last->next != NULL){
-            last = last->next;
-            total += last->total_cost - first->total_cost;
-        }
-        
-    }
+    int total = getCurrentTotalCost(roadmapDFS);
+
     printf("\nTotal cost: %d\n", total);
 
     deleteAllRoadMap(&roadmapDFS);
@@ -455,17 +457,8 @@ int main(){
         temp2 = temp2->next;
     }
 
-    int total2 = 0;
-    if (roadmapBFS != NULL) {
-        struct RoadMap* first = roadmapBFS;
-        struct RoadMap* last = roadmapBFS;
-        while (last->next != NULL){
-            last = last->next;
-            total += last->total_cost - first->total_cost;
-        }
-        
-    }
-    printf("\nTotal cost: %d\n", total);
+    int total2 = getCurrentTotalCost(roadmapBFS);
+    printf("\nTotal cost: %d\n\n\n", total2);
 
     deleteAllRoadMap(&roadmapBFS);
 
