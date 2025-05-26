@@ -8,7 +8,7 @@
 #define INF 99999999 //Infinite cost for i==j
 
 void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si aca
-    printf("City: %s", citiesInfo[city_id].city_name);
+    printf("%s", citiesInfo[city_id].city_name);
 }
 
 // 2. RoadMap type shi
@@ -278,6 +278,19 @@ void deleteFamilyTree(struct FamilyTreeNode*node){
     free(node);
 }
 
+int computeTotalCost(struct RoadMap* roadmap){
+    int total=0;
+    struct RoadMap* current=roadmap;
+    while (current!=NULL && current->next!=NULL){
+        int from=current->city_id;
+        int to=current->next->city_id;
+        int step=adjacency_matrix[from][to];
+        if (step<0) step=0;
+        total+=step;
+        current=current->next;
+    }
+    return total;
+}
 
 int main(){
     // DFS BLOCK
@@ -301,13 +314,7 @@ int main(){
         temp = temp->next;
     }
 
-    int total=0;
-    if (roadmapDFS != NULL) {
-        struct RoadMap* first = roadmapDFS;
-        struct RoadMap* last = roadmapDFS;
-        while (last->next != NULL) last = last->next;
-        total = last->total_cost - first->total_cost;
-    }
+    int total=computeTotalCost(roadmapDFS);
     printf("\nTotal cost: %d\n", total);
 
     deleteAllRoadMap(&roadmapDFS);
@@ -334,14 +341,7 @@ int main(){
         tempB = tempB->next;
     }
 
-    int totalB=0;
-    if (roadmapBFS != NULL) {
-        struct RoadMap* firstB = roadmapBFS;
-        struct RoadMap* lastB = roadmapBFS;
-        while (lastB->next != NULL) lastB = lastB->next;
-        totalB = lastB->total_cost - firstB->total_cost;
-    }
-    printf("\nTotal cost: %d\n", totalB);
+    int totalB=computeTotalCost(roadmapBFS);
 
     deleteAllRoadMap(&roadmapBFS);
 }
