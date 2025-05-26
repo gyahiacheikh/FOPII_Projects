@@ -13,7 +13,6 @@ void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si a
 
 // 2. RoadMap type shi
 // RoadMap es una llista enllaçada on cada nodo es una ciutat, guarda el cost total fins la ciutat aquella i apunta al seguent ciutat (node)
-
 void printRoadMap(struct RoadMap*head){ //pa ver la rout
     struct RoadMap*temp=head;
     while (temp!=NULL){
@@ -22,7 +21,6 @@ void printRoadMap(struct RoadMap*head){ //pa ver la rout
         temp=temp->next;
     }
 }
-
 
 void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){
     if (*head != NULL){
