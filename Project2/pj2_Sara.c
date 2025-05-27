@@ -11,7 +11,7 @@ void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si a
     printf("City: %s", citiesInfo[city_id].city_name);
 }
 
-
+// Va per tota la llista RoadMap i imprimeix cada ciutat amb el cost acumulat
 void printRoadMap(struct RoadMap*head){ //pa ver la rout
     struct RoadMap*temp=head;
     while (temp!=NULL){
@@ -29,7 +29,7 @@ void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){
         if (last->city_id == city_id) return; // Evita duplicados consecutivos
     }
 
-    struct RoadMap *new_node = malloc(sizeof(struct RoadMap));
+    struct RoadMap *new_node = malloc(sizeof(struct RoadMap)); //Crea nou node amb city_id i totalcost i el fica al final de la llista
     new_node->city_id = city_id; 
     new_node->total_cost = total_cost;
     new_node->next = NULL;
@@ -60,7 +60,7 @@ int RouteSearch(int source, int destination, struct RoadMap** roadmap, int cost_
     int dist[NUMBER_CITIES], visited[NUMBER_CITIES] = {0}, prev[NUMBER_CITIES];
     for (int i = 0; i < NUMBER_CITIES; i++) {
         dist[i] = INF; // Set initial distances to infinity
-        prev[i] = -1;
+        prev[i] = -1; // es para reconstruir el camino
     }
     dist[source] = 0;
 
@@ -280,32 +280,6 @@ void printFamilyTree(struct FamilyTreeNode* node, int level){
     printFamilyTree(node->father_parents, level + 1);
 }
 
-/*
-int main(){
-    struct RoadMap*roadmap=NULL;
-    // mas pruebas
-    int source=0;
-    int destination=3;
-
-    addToRoadMap(&roadmap, source,0);
-
-    int total_cost= RouteSearch(source, destination, &roadmap);
-
-    printf("\nFinal route (DEMO): \n");
-    printRoadMap(roadmap);
-    printf("\nTotal cost: %d\n", total_cost);
-
-    deleteAllRoadMap(&roadmap);
-
-    printf("Test: root = %s and %s\n", citiesInfo[0].mother_name, citiesInfo[0].father_name);
-
-    printf("\nDFS Ancestor Tree:\n");
-    struct FamilyTreeNode *tree = createFamilyTreeDFS(0);  // Empiezas por ciudad 0 (Barcelona)
-    printFamilyTree(tree, 0);
-
-    return 0;
-}
-*/
 
 void printFormattedRoadMap(struct RoadMap* head) {
     if (!head || !head->next) return;
@@ -341,30 +315,6 @@ void printFormattedRoadMap(struct RoadMap* head) {
     // Último tramo
     printf(" %d\n", segment_cost);
 }
-
-
-
-/*
-HOLIIIIIS tenemos un par d errores en el DFS. Esto es lo que printea:abortDFS -> Names:
-Maria and Jordi (City: Barcelona)
--> Louise and Paul (City: Paris)
--> -> Anna and Kazimierz (City: Varsovia)
--> -> Agnese and Leonardo (City: Rome)
--> Eva and Albert (City: Zurich)
--> -> Madalena and Louren├ºo (City: Lisbon)
--> -> Amber and Finn (City: Amsterdam)
-
-DEBERIA printear esto:
--> Louise and Pol (Paris)
--> Eva and Albert (Zurich)
-->-> Anna and Kazimierz (Varsovia)
-->-> Agnese and Leonardo (Rome)
-->-> Madalena and Lourenc¸o (Lisboa)
-->-> Amber and Fin (Amsterdam)
-
-Es decir, los que tienen solo una flecha -> deberian ir primero. Asi la suma de los costos seria menor (deberia serlo)
-
-*/
 
 
 
