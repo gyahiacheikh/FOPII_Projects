@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <math.h>
 #include "small.h" // Me da la adjecent matrix y los registros
 
@@ -11,25 +10,14 @@ void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si a
     printf("City: %s", citiesInfo[city_id].city_name);
 }
 
-// Va per tota la llista RoadMap i imprimeix cada ciutat amb el cost acumulat
-void printRoadMap(struct RoadMap*head){ //pa ver la rout
-    struct RoadMap*temp=head;
-    while (temp!=NULL){
-        PrintCityName(temp->city_id);
-        printf(" %d \n", temp->total_cost);
-        temp=temp->next;
-    }
-}
-
-
-void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){
+void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){// Afegeix una ciutat al final de la llista enllaçada
     if (*head != NULL){
         struct RoadMap*last = *head;
         while (last->next != NULL) last = last->next;
         if (last->city_id == city_id) return; // Evita duplicados consecutivos
     }
 
-    struct RoadMap *new_node = malloc(sizeof(struct RoadMap)); //Crea nou node amb city_id i totalcost i el fica al final de la llista
+    struct RoadMap *new_node = malloc(sizeof(struct RoadMap));
     new_node->city_id = city_id; 
     new_node->total_cost = total_cost;
     new_node->next = NULL;
@@ -54,13 +42,12 @@ void deleteAllRoadMap(struct RoadMap **head){//LLAMAR AL FINAL DEL PROGRAMA SOLO
 }
 
 
-
 int RouteSearch(int source, int destination, struct RoadMap** roadmap, int cost_offset) {
     // Initialize distance array with INF, visited array with 0, and prev array with -1
     int dist[NUMBER_CITIES], visited[NUMBER_CITIES] = {0}, prev[NUMBER_CITIES];
     for (int i = 0; i < NUMBER_CITIES; i++) {
         dist[i] = INF; // Set initial distances to infinity
-        prev[i] = -1; // es para reconstruir el camino
+        prev[i] = -1;
     }
     dist[source] = 0;
 
@@ -127,9 +114,9 @@ int RouteSearch(int source, int destination, struct RoadMap** roadmap, int cost_
 
 
 int getCurrentTotalCost(struct RoadMap* roadmap) {
-    if (!roadmap) return 0;
-    while (roadmap->next != NULL) roadmap = roadmap->next;
-    return roadmap->total_cost;
+    if (!roadmap) return 0;//Si la llista esta buida
+    while (roadmap->next != NULL) roadmap = roadmap->next;//Va fins al final de la llista enllaçada
+    return roadmap->total_cost; // Torna el cost total acumulat desde l'ultim node
 }
 
 //DFS
@@ -268,7 +255,7 @@ void BFSroute(struct FamilyTreeNode* root, struct RoadMap** roadmap) {
 }
 
 
-
+// For DFS
 void printFamilyTree(struct FamilyTreeNode* node, int level){
     if (node==NULL) return;
     for (int i = 0; i < level; i++) printf("-> ");
@@ -276,8 +263,45 @@ void printFamilyTree(struct FamilyTreeNode* node, int level){
     PrintCityName(node->city_id);
     printf(")\n");
 
-    printFamilyTree(node->mother_parents, level + 1);
+    printFamilyTree(node->mother_parents, level + 1);//Crida recursivament per imprimir el sub arbre de la mama/papa pujant el nivell
     printFamilyTree(node->father_parents, level + 1);
+}
+
+// For BFS 
+void printFamilyTreeBFS(struct FamilyTreeNode* root) {
+    if (root == NULL) return;
+
+    // Define a queue and corresponding level tracker
+    struct FamilyTreeNode* queue[NUMBER_CITIES];
+    int levels[NUMBER_CITIES];  // to track levels for indentation
+
+    int front = 0, rear = 0;
+    queue[rear] = root;
+    levels[rear++] = 0;
+
+    // If nodes in the que, process them one by one
+    while (front < rear) {
+        struct FamilyTreeNode* current = queue[front];
+        // Level tells us how deep the nodes are in the family tree.
+        int level = levels[front++];
+        
+        // Print the current node 
+        for (int i = 0; i < level; i++) printf("-> ");
+        printf("%s and %s (", current->motherName, current->fatherName);
+        PrintCityName(current->city_id);
+        printf(")\n");
+
+        // Add the grandparents to the queue and increase the level by 1
+        if (current->mother_parents) {
+            queue[rear] = current->mother_parents;
+            levels[rear++] = level + 1;
+        }
+
+        if (current->father_parents) {
+            queue[rear] = current->father_parents;
+            levels[rear++] = level + 1;
+        }
+    }
 }
 
 
@@ -296,25 +320,54 @@ void printFormattedRoadMap(struct RoadMap* head) {
         int to = next->city_id;
         int cost = adjacency_matrix[from][to];
 
-        // Si hay una conexión válida, es parte del mismo segmento
         if (cost > 0) {
+            // Same segment: add city and cost
             printf("-%s", citiesInfo[to].city_name);
             segment_cost += cost;
-        }
-        else {
-            // Si no hay conexión directa, nuevo segmento
+        } else {
+            // Segment break: print cost, and start new segment with previous city
             printf(" %d\n", segment_cost);
             segment_cost = 0;
-            printf("%s", citiesInfo[to].city_name);
+            printf("%s", citiesInfo[current->city_id].city_name);  // start from the last city again
+            printf("-%s", citiesInfo[to].city_name);
+
+            // If there's no direct connection, don't add cost
+            cost = adjacency_matrix[current->city_id][to];
+            if (cost > 0) {
+                segment_cost += cost;
+            }
         }
 
         current = next;
         next = next->next;
     }
 
-    // Último tramo
+    // Print cost of the last segment
     printf(" %d\n", segment_cost);
 }
+
+
+/*
+HOLIIIIIS tenemos un par d errores en el DFS. Esto es lo que printea:abortDFS -> Names:
+Maria and Jordi (City: Barcelona)
+-> Louise and Paul (City: Paris)
+-> -> Anna and Kazimierz (City: Varsovia)
+-> -> Agnese and Leonardo (City: Rome)
+-> Eva and Albert (City: Zurich)
+-> -> Madalena and Louren├ºo (City: Lisbon)
+-> -> Amber and Finn (City: Amsterdam)
+
+DEBERIA printear esto:
+-> Louise and Pol (Paris)
+-> Eva and Albert (Zurich)
+->-> Anna and Kazimierz (Varsovia)
+->-> Agnese and Leonardo (Rome)
+->-> Madalena and Lourenc¸o (Lisboa)
+->-> Amber and Fin (Amsterdam)
+
+Es decir, los que tienen solo una flecha -> deberian ir primero. Asi la suma de los costos seria menor (deberia serlo)
+
+*/
 
 
 
@@ -352,7 +405,7 @@ int main(){
     printf("BFS -> Names:\n");
 
     struct FamilyTreeNode* treeBFS = createFamilyTreeBFS(0);
-    printFamilyTree(treeBFS, 0);
+    printFamilyTreeBFS(treeBFS);
 
     struct RoadMap* roadmapBFS = NULL;
     BFSroute(treeBFS, &roadmapBFS);

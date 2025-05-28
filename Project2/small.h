@@ -69,3 +69,9 @@ struct RoadMap
     int total_cost;
     struct RoadMap * next;
 };
+struct PartialRoute
+{
+    int from;
+    int to;
+    int cost; // opcional, si quieres guardar el coste parcial aquí
+};
