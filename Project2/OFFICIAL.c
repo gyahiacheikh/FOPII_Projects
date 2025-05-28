@@ -4,6 +4,17 @@
 #include <math.h>
 #include "small.h" // Me da la adjecent matrix y los registros
 
+#define MAX_PARTIALS 32
+struct PartialRoute{
+    int from;
+    int to;
+};
+
+struct PartialRoute partialsDFS[MAX_PARTIALS];
+int partial_count_DFS = 0;
+struct PartialRoute partialsBFS[MAX_PARTIALS];
+int partial_count_BFS = 0;
+
 #define INF 99999999 //Infinite cost for i==j
 
 void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si aca
@@ -147,23 +158,28 @@ struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
 }
 
 // Perform DFS traversal on the family tree and generate route map
-void DFSroute(struct FamilyTreeNode*node, struct RoadMap**roadmap){
-    if (node==NULL) return;
+void DFSroute(struct FamilyTreeNode* node, struct RoadMap** roadmap, int current_city) {
+    if (node == NULL) return;
 
-    // If mother’s parents exist, go there
-    if (node->mother_parents != NULL){
+    if (node->mother_parents != NULL) {
         int offset = getCurrentTotalCost(*roadmap);
-        RouteSearch(node->city_id, node->mother_parents->city_id, roadmap, offset);
-        DFSroute(node->mother_parents, roadmap); //pedazo recursion aqui chaval
+        RouteSearch(current_city, node->mother_parents->city_id, roadmap, offset);
+        // El siguiente origen es node->mother_parents->city_id
+        partialsDFS[partial_count_DFS].from=current_city;
+        partialsDFS[partial_count_DFS].to = node->mother_parents->city_id;
+        partial_count_DFS++;
+        DFSroute(node->mother_parents, roadmap, node->mother_parents->city_id);
     }
-    //mismo deal con el papa
-    if (node->father_parents != NULL){
+    if (node->father_parents != NULL) {
         int offset = getCurrentTotalCost(*roadmap);
-        RouteSearch(node->city_id, node->father_parents->city_id, roadmap, offset);
-        DFSroute(node->father_parents, roadmap); //pedazo recursion aqui chaval
+        RouteSearch(current_city, node->father_parents->city_id, roadmap, offset);
+        // El siguiente origen es node->father_parents->city_id
+        partialsDFS[partial_count_DFS].from=current_city;
+        partialsDFS[partial_count_DFS].to = node->father_parents->city_id;
+        partial_count_DFS++;
+        DFSroute(node->father_parents, roadmap, node->father_parents->city_id);
     }
 }
-
 
 //BFS
 /*Pseudocode:
@@ -228,28 +244,32 @@ struct FamilyTreeNode* createFamilyTreeBFS(int city_id)
 void BFSroute(struct FamilyTreeNode* root, struct RoadMap** roadmap) {
     if (root == NULL) return;
 
-    // Create a queue for BFS
-    struct FamilyTreeNode* queue[NUMBER_CITIES];  // Cola de nodos juajauaja
+    struct FamilyTreeNode* queue[NUMBER_CITIES];
+    int city_queue[NUMBER_CITIES];
     int front = 0, rear = 0;
-
-    // Enqueue root and initialize rear
-    queue[rear++] = root;
+    queue[rear] = root;
+    city_queue[rear++] = root->city_id;
 
     while (front < rear) {
-        // Print front of queue and remove it from queue
-        struct FamilyTreeNode* current = queue[front++];
-
+        struct FamilyTreeNode* current = queue[front];
+        int from_city = city_queue[front++];
         if (current->mother_parents != NULL) {
             int offset = getCurrentTotalCost(*roadmap);
-            RouteSearch(current->city_id, current->mother_parents->city_id, roadmap, offset);
-            queue[rear++] = current->mother_parents;
+            RouteSearch(from_city, current->mother_parents->city_id, roadmap, offset);
+            partialsBFS[partial_count_BFS].from = from_city;
+            partialsBFS[partial_count_BFS].to = current->mother_parents->city_id;
+            partial_count_BFS++;
+            queue[rear] = current->mother_parents;
+            city_queue[rear++] = current->mother_parents->city_id;
         }
-
-        // same here with the papa
         if (current->father_parents != NULL) {
             int offset = getCurrentTotalCost(*roadmap);
-            RouteSearch(current->city_id, current->father_parents->city_id, roadmap, offset);
-            queue[rear++] = current->father_parents;
+            RouteSearch(from_city, current->father_parents->city_id, roadmap, offset);
+            partialsBFS[partial_count_BFS].from = from_city;
+            partialsBFS[partial_count_BFS].to = current->father_parents->city_id;
+            partial_count_BFS++;
+            queue[rear] = current->father_parents;
+            city_queue[rear++] = current->father_parents->city_id;
         }
     }
 }
@@ -305,45 +325,23 @@ void printFamilyTreeBFS(struct FamilyTreeNode* root) {
 }
 
 
-void printFormattedRoadMap(struct RoadMap* head) {
-    if (!head || !head->next) return;
-
-    struct RoadMap* current = head;
-    struct RoadMap* next = current->next;
-
-    int segment_cost = 0;
-
-    printf("%s", citiesInfo[current->city_id].city_name);
-
-    while (next != NULL) {
-        int from = current->city_id;
-        int to = next->city_id;
-        int cost = adjacency_matrix[from][to];
-
-        if (cost > 0) {
-            // Same segment: add city and cost
-            printf("-%s", citiesInfo[to].city_name);
-            segment_cost += cost;
-        } else {
-            // Segment break: print cost, and start new segment with previous city
-            printf(" %d\n", segment_cost);
-            segment_cost = 0;
-            printf("%s", citiesInfo[current->city_id].city_name);  // start from the last city again
-            printf("-%s", citiesInfo[to].city_name);
-
-            // If there's no direct connection, don't add cost
-            cost = adjacency_matrix[current->city_id][to];
-            if (cost > 0) {
-                segment_cost += cost;
-            }
+void printPartialRoute(struct RoadMap* roadmap, int from, int to) {
+    struct RoadMap* curr = roadmap;
+    int started = 0, cost = 0;
+    while (curr && curr->next) {
+        if (!started && curr->city_id == from) started = 1;
+        if (started) {
+            printf("%s", citiesInfo[curr->city_id].city_name);
+            int step = adjacency_matrix[curr->city_id][curr->next->city_id];
+            if (curr->next->city_id != to) printf("-");
+            cost += step;
         }
-
-        current = next;
-        next = next->next;
+        if (started && curr->next->city_id == to) {
+            printf("-%s %d\n", citiesInfo[to].city_name, cost + adjacency_matrix[curr->city_id][to]);
+            break;
+        }
+        curr = curr->next;
     }
-
-    // Print cost of the last segment
-    printf(" %d\n", segment_cost);
 }
 
 
@@ -380,10 +378,12 @@ int main(){
     printFamilyTree(treeDFS, 0);
 
     struct RoadMap* roadmapDFS = NULL;
-    DFSroute(treeDFS, &roadmapDFS);
+    DFSroute(treeDFS, &roadmapDFS, treeDFS->city_id);
 
     printf("\nPartial road map:\n");
-    printFormattedRoadMap(roadmapDFS);
+    for (int i = 0; i < partial_count_DFS; i++) {
+        printPartialRoute(roadmapDFS, partialsDFS[i].from, partialsDFS[i].to);
+    }
 
     printf("Complete Road Map:\n");
     struct RoadMap* temp = roadmapDFS;
@@ -411,11 +411,11 @@ int main(){
     BFSroute(treeBFS, &roadmapBFS);
 
     printf("\nPartial road map:\n");
-    // igual que DFS pero siguiendo orden BFS
-    printFormattedRoadMap(roadmapBFS);
+    for (int i = 0; i < partial_count_BFS; i++) {
+        printPartialRoute(roadmapBFS, partialsBFS[i].from, partialsBFS[i].to);
+    }
 
     printf("Complete Road Map:\n");
-    // igual que DFS
     struct RoadMap* temp2 = roadmapBFS;
     while (temp2 != NULL) {
         printf("%s", citiesInfo[temp2->city_id].city_name);
