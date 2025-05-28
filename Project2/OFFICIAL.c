@@ -165,7 +165,7 @@ void DFSroute(struct FamilyTreeNode* node, struct RoadMap** roadmap, int current
         int offset = getCurrentTotalCost(*roadmap);
         RouteSearch(current_city, node->mother_parents->city_id, roadmap, offset);
         // El siguiente origen es node->mother_parents->city_id
-        partialsDFS[partial_count_DFS].from=current_city;
+        partialsDFS[partial_count_DFS].from=current_city; //Guardamos el array en partialsDFS
         partialsDFS[partial_count_DFS].to = node->mother_parents->city_id;
         partial_count_DFS++;
         DFSroute(node->mother_parents, roadmap, node->mother_parents->city_id);
@@ -337,7 +337,7 @@ void printPartialRoute(struct RoadMap* roadmap, int from, int to) {
             cost += step;
         }
         if (started && curr->next->city_id == to) {
-            printf("-%s %d\n", citiesInfo[to].city_name, cost + adjacency_matrix[curr->city_id][to]);
+            printf("-%s %d\n", citiesInfo[to].city_name, cost);
             break;
         }
         curr = curr->next;
