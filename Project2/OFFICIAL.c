@@ -4,14 +4,14 @@
 #include <math.h>
 #include "small.h" // Me da la adjecent matrix y los registros
 
-#define MAX_PARTIALS 32
-struct PartialRoute{
+#define MAX_PARTIALS 32 // # of maximum of partial routes to save
+struct PartialRoute{ // represents a partial route between two cities
     int from;
     int to;
 };
 
-struct PartialRoute partialsDFS[MAX_PARTIALS];
-int partial_count_DFS = 0;
+struct PartialRoute partialsDFS[MAX_PARTIALS]; // array of partial route
+int partial_count_DFS = 0; // and its respective counter
 struct PartialRoute partialsBFS[MAX_PARTIALS];
 int partial_count_BFS = 0;
 
@@ -21,19 +21,19 @@ void PrintCityName(int city_id){ //para imprimir el nombre de la ciudad por si a
     printf("City: %s", citiesInfo[city_id].city_name);
 }
 
-void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){// Afegeix una ciutat al final de la llista enllaçada
+void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){// Adds a city at the end of the linked list 
     if (*head != NULL){
         struct RoadMap*last = *head;
         while (last->next != NULL) last = last->next;
-        if (last->city_id == city_id) return; // Evita duplicados consecutivos
+        if (last->city_id == city_id) return; // Avoinding duplicates
     }
 
-    struct RoadMap *new_node = malloc(sizeof(struct RoadMap));
+    struct RoadMap *new_node = malloc(sizeof(struct RoadMap)); // Creating new node
     new_node->city_id = city_id; 
     new_node->total_cost = total_cost;
     new_node->next = NULL;
 
-    if (*head == NULL){
+    if (*head == NULL){ // Checking if the node needs to be the first or put it last
         *head = new_node;
     } else {
         struct RoadMap*temp = *head;
@@ -42,7 +42,7 @@ void addToRoadMap(struct RoadMap**head, int city_id, int total_cost){// Afegeix 
     }
 }
 
-void deleteAllRoadMap(struct RoadMap **head){//LLAMAR AL FINAL DEL PROGRAMA SOLO EH
+void deleteAllRoadMap(struct RoadMap **head){  // Remember calling it at the end of the program
     struct RoadMap*temp;
     while(*head!=NULL){
         temp=*head;
@@ -123,15 +123,14 @@ int RouteSearch(int source, int destination, struct RoadMap** roadmap, int cost_
     return dist[destination];
 }
 
-
+// Calculates the accumulated total cost in the route
 int getCurrentTotalCost(struct RoadMap* roadmap) {
-    if (!roadmap) return 0;//Si la llista esta buida
-    while (roadmap->next != NULL) roadmap = roadmap->next;//Va fins al final de la llista enllaçada
-    return roadmap->total_cost; // Torna el cost total acumulat desde l'ultim node
+    if (!roadmap) return 0; 
+    while (roadmap->next != NULL) roadmap = roadmap->next; // Goes at the end of the linked list
+    return roadmap->total_cost; // Returns the accumulated cost
 }
 
 //DFS
-
 struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
     struct FamilyTreeNode*node=malloc(sizeof(struct FamilyTreeNode));
     if (node==NULL){
@@ -161,19 +160,17 @@ struct FamilyTreeNode*createFamilyTreeDFS(int city_id){
 void DFSroute(struct FamilyTreeNode* node, struct RoadMap** roadmap, int current_city) {
     if (node == NULL) return;
 
-    if (node->mother_parents != NULL) {
-        int offset = getCurrentTotalCost(*roadmap);
-        RouteSearch(current_city, node->mother_parents->city_id, roadmap, offset);
-        // El siguiente origen es node->mother_parents->city_id
-        partialsDFS[partial_count_DFS].from=current_city; //Guardamos el array en partialsDFS
+    if (node->mother_parents != NULL) { 
+        int offset = getCurrentTotalCost(*roadmap); // First we calculate the actual cost
+        RouteSearch(current_city, node->mother_parents->city_id, roadmap, offset); // We call RouteSearch and connect the current city with the parents of mother's side
+        partialsDFS[partial_count_DFS].from=current_city; // We save this partial route in partialsDFS
         partialsDFS[partial_count_DFS].to = node->mother_parents->city_id;
         partial_count_DFS++;
-        DFSroute(node->mother_parents, roadmap, node->mother_parents->city_id);
+        DFSroute(node->mother_parents, roadmap, node->mother_parents->city_id); // And repeat recursively with the ancestors of the mother's side
     }
-    if (node->father_parents != NULL) {
+    if (node->father_parents != NULL) { // Same but father's side
         int offset = getCurrentTotalCost(*roadmap);
         RouteSearch(current_city, node->father_parents->city_id, roadmap, offset);
-        // El siguiente origen es node->father_parents->city_id
         partialsDFS[partial_count_DFS].from=current_city;
         partialsDFS[partial_count_DFS].to = node->father_parents->city_id;
         partial_count_DFS++;
@@ -182,17 +179,6 @@ void DFSroute(struct FamilyTreeNode* node, struct RoadMap** roadmap, int current
 }
 
 //BFS
-/*Pseudocode:
-create a queue Q 
-mark v as visited and put v into Q 
-while Q is non-empty 
-    remove the head u of Q 
-    mark and enqueue all (unvisited) neighbours of u
-
-
- Function to perform BFS codigo plantilla
-*/
-
 
 struct FamilyTreeNode* createFamilyTreeBFS(int city_id)
 {
@@ -323,27 +309,54 @@ void printFamilyTreeBFS(struct FamilyTreeNode* root) {
         }
     }
 }
-
-
-void printPartialRoute(struct RoadMap* roadmap, int from, int to) {
-    struct RoadMap* curr = roadmap;
-    int started = 0, cost = 0;
-    while (curr && curr->next) {
-        if (!started && curr->city_id == from) started = 1;
-        if (started) {
-            printf("%s", citiesInfo[curr->city_id].city_name);
-            int step = adjacency_matrix[curr->city_id][curr->next->city_id];
-            if (curr->next->city_id != to) printf("-");
-            cost += step;
-        }
-        if (started && curr->next->city_id == to) {
-            printf("-%s %d\n", citiesInfo[to].city_name, cost);
-            break;
-        }
-        curr = curr->next;
+/*
+We've made this function that calculates and prints the shortest route between 2 cities using again Dijkstra 
+since from all things we tried this is the only working, it's similar to RouteSearch but only prints without 
+modifying structures.
+*/
+void printShortestRoute(int from, int to) {
+    int dist[NUMBER_CITIES], visited[NUMBER_CITIES] = {0}, prev[NUMBER_CITIES];
+    for (int i = 0; i < NUMBER_CITIES; i++) {
+        dist[i] = INF;
+        prev[i] = -1;
     }
-}
+    dist[from] = 0;
 
+    for (int count = 0; count < NUMBER_CITIES - 1; count++) { // Searching a non-visited node with smallest distance
+        int u = -1, min = INF;
+        for (int i = 0; i < NUMBER_CITIES; i++) {
+            if (!visited[i] && dist[i] < min) {
+                min = dist[i];
+                u = i;
+            }
+        }
+        if (u == -1) break;
+        visited[u] = 1;
+        for (int v = 0; v < NUMBER_CITIES; v++) { // Updating distances
+            if (adjacency_matrix[u][v] > 0 && !visited[v]) {
+                int new_dist = dist[u] + adjacency_matrix[u][v];
+                if (new_dist < dist[v]) {
+                    dist[v] = new_dist;
+                    prev[v] = u;
+                }
+            }
+        }
+    }
+
+    int path[NUMBER_CITIES];
+    int length = 0, current = to;
+    while (current != -1) {
+        path[length++] = current;
+        current = prev[current];
+    }
+    //Printing
+    int cost = 0;
+    for (int i = length - 1; i > 0; i--) {
+        printf("%s-", citiesInfo[path[i]].city_name);
+        cost += adjacency_matrix[path[i]][path[i-1]];
+    }
+    printf("%s %d\n", citiesInfo[path[0]].city_name, cost);
+}
 
 /*
 HOLIIIIIS tenemos un par d errores en el DFS. Esto es lo que printea:abortDFS -> Names:
@@ -382,7 +395,7 @@ int main(){
 
     printf("\nPartial road map:\n");
     for (int i = 0; i < partial_count_DFS; i++) {
-        printPartialRoute(roadmapDFS, partialsDFS[i].from, partialsDFS[i].to);
+        printShortestRoute(partialsDFS[i].from, partialsDFS[i].to);
     }
 
     printf("Complete Road Map:\n");
@@ -412,7 +425,7 @@ int main(){
 
     printf("\nPartial road map:\n");
     for (int i = 0; i < partial_count_BFS; i++) {
-        printPartialRoute(roadmapBFS, partialsBFS[i].from, partialsBFS[i].to);
+    printShortestRoute(partialsBFS[i].from, partialsBFS[i].to);
     }
 
     printf("Complete Road Map:\n");
